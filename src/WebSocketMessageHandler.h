@@ -12,20 +12,16 @@
 
 #include "PathPlanner.h"
 
-
 using std::string;
 using json = nlohmann::json;
 
 class WebSocketMessageHandler
 {
-public:
-    WebSocketMessageHandler(PathPlanner& pathPlanner) : pathPlanner(pathPlanner) {}
+  public:
+    WebSocketMessageHandler(PathPlanner& path_planner) : path_planner_(path_planner) {}
     void HandleMessage(const string& message, uWS::WebSocket<uWS::SERVER>& ws);
 
-private:
-
-    PathPlanner& pathPlanner;
-
+  private:
     bool MessageHasExpectedPrefix(const string& message);
     string GetMessageContent(const string& message);
     string ProcessMessageContent(string& content);
@@ -33,8 +29,9 @@ private:
 
     PathPlannerInput ReadPlannerInput(json data);
 
-    void SendDefaultResponse(uWS::WebSocket<uWS::SERVER> &ws) const;
+    void SendDefaultResponse(uWS::WebSocket<uWS::SERVER>& ws) const;
+
+	PathPlanner& path_planner_;
 };
 
-
-#endif //PF_WEBSOCKETMESSAGEHANDLER_H
+#endif  // PF_WEBSOCKETMESSAGEHANDLER_H

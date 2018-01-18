@@ -1,19 +1,20 @@
-//
-// Created by Stanislav Olekhnovich on 12/10/2017.
-//
+///
+/// @file
+///
 
 #include "KeepLanePathPlanner.h"
 
 std::vector<CartesianPoint> KeepLanePathPlanner::GeneratePath(PathPlannerInput input)
 {
-    std::vector<CartesianPoint> outputPath;
+    std::vector<CartesianPoint> output_path;
     double dist_inc = 0.3;
-    for (int i= 0; i < 50; i++)
+
+    for (int i = 0; i < 50; i++)
     {
-        double next_s = input.LocationFrenet.s + (i + 1) * dist_inc;
+        double next_s = input.fenet_location.s + (i + 1) * dist_inc;
         double next_d = 6;
 
-        outputPath.push_back(map.FrenetToCartesian({next_s, next_d}));
+        output_path.push_back(map_.FrenetToCartesian({next_s, next_d}));
     }
-    return outputPath;
+    return output_path;
 }

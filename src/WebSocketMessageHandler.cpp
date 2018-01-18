@@ -1,39 +1,39 @@
-//
-// Created by Stanislav Olekhnovich on 02/08/2017.
-//
+///
+/// @file
+///
 
 #include "WebSocketMessageHandler.h"
 
 string WebSocketMessageHandler::CreateResponseMessage(const std::vector<CartesianPoint>& path)
 {
-    json msgJson;
+    json json_msg;
 
-    std::vector<double> pathX;
-    std::vector<double> pathY;
-    for (auto& p: path)
+    std::vector<double> path_x;
+    std::vector<double> path_y;
+    for (auto& p : path)
     {
-        pathX.push_back(p.x);
-        pathY.push_back(p.y);
+        path_x.push_back(p.x);
+        path_y.push_back(p.y);
     }
 
-    msgJson["next_x"] = pathX;
-    msgJson["next_y"] = pathY;
+    json_msg["next_x"] = path_x;
+    json_msg["next_y"] = path_y;
 
-    auto msg = "42[\"control\"," + msgJson.dump() + "]";
+    auto msg = "42[\"control\"," + json_msg.dump() + "]";
     return msg;
 }
 
 string WebSocketMessageHandler::ProcessMessageContent(string& content)
 {
-    auto jsonContent = json::parse(content);
-    string eventType = jsonContent[0].get<string>();
+    auto json_content = json::parse(content);
+    string event_type = json_content[0].get<string>();
 
     string response;
-    if (eventType == "telemetry")
+    if (event_type == "telemetry")
     {
-        auto data = jsonContent[1];
-        auto pathPlannerInput = ReadPlannerInput(data);
-        auto output = pathPlanner.GeneratePath(pathPlannerInput);
+        auto data = json_content[1];
+        auto path_planner_input = ReadPlannerInput(data);
+        auto output = path_planner_.GeneratePath(path_planner_input);
         response = CreateResponseMessage(output);
     }
     return response;
@@ -41,34 +41,35 @@ string WebSocketMessageHandler::ProcessMessageContent(string& content)
 
 PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
 {
-    PathPlannerInput pathPlannerInput;
+    PathPlannerInput path_planner_input;
 
-    pathPlannerInput.LocationCartesian= { data["x"], data["y"], data["yaw"] };
-    pathPlannerInput.LocationFrenet= { data["s"], data["d"] };
-    pathPlannerInput.Speed = data["speed"];
-    pathPlannerInput.PreviousPathX = data["previous_path_x"].get<std::vector<double>>();
-    pathPlannerInput.PreviousPathY = data["previous_path_y"].get<std::vector<double>>();
+    path_planner_input.cartesian_location = {data["x"], data["y"], data["yaw"]};
+    path_planner_input.fenet_location = {data["s"], data["d"]};
+    path_planner_input.speed = data["speed"];
+    path_planner_input.previous_path_x = data["previous_path_x"].get<std::vector<double>>();
+    path_planner_input.previous_path_y = data["previous_path_y"].get<std::vector<double>>();
 
-    assert(pathPlannerInput.PreviousPathX.size() == pathPlannerInput.PreviousPathY.size());
-    for (int i = 0; i < pathPlannerInput.PreviousPathX.size(); i++)
+    assert(path_planner_input.previous_path_x.size() == path_planner_input.previous_path_y.size());
+    for (int i = 0; i < path_planner_input.previous_path_x.size(); i++)
     {
-        pathPlannerInput.Path.emplace_back(pathPlannerInput.PreviousPathX[i], pathPlannerInput.PreviousPathY[i]);
+        path_planner_input.path.emplace_back(path_planner_input.previous_path_x[i],
+                                             path_planner_input.previous_path_y[i]);
     }
 
-    pathPlannerInput.PathEndpointFrenet = { data["end_path_s"], data["end_path_d"] };
-    auto sensorFusionData = data["sensor_fusion"].get<std::vector<std::vector<double>>>();
-    for (auto& otherCarData : sensorFusionData)
+    path_planner_input.path_endpoint_frenet = {data["end_path_s"], data["end_path_d"]};
+    auto sensor_fusion_data = data["sensor_fusion"].get<std::vector<std::vector<double>>>();
+    for (auto& other_car_data : sensor_fusion_data)
     {
-        OtherCar otherCar;
-        otherCar.cartesian_location = { otherCarData[1], otherCarData[2] };
-        otherCar.x_axis_speed = otherCarData[3];
-        otherCar.y_axis_speed = otherCarData[4];
-        otherCar.frenet_location = { otherCarData[5], otherCarData[6] };
+        OtherCar other_car;
+        other_car.cartesian_location = {other_car_data[1], other_car_data[2]};
+        other_car.x_axis_speed = other_car_data[3];
+        other_car.y_axis_speed = other_car_data[4];
+        other_car.frenet_location = {other_car_data[5], other_car_data[6]};
 
-        pathPlannerInput.OtherCars.push_back(otherCar);
+        path_planner_input.other_cars.push_back(other_car);
     }
 
-    return pathPlannerInput;
+    return path_planner_input;
 }
 
 string WebSocketMessageHandler::GetMessageContent(const string& message)
@@ -91,7 +92,7 @@ string WebSocketMessageHandler::GetMessageContent(const string& message)
 bool WebSocketMessageHandler::MessageHasExpectedPrefix(const string& message)
 {
     // "42" at the start of the message means there's a websocket message event.
-    const string prefix {"42"};
+    const string prefix{"42"};
     return (message.substr(0, prefix.size()) == prefix);
 }
 
@@ -119,5 +120,3 @@ void WebSocketMessageHandler::SendDefaultResponse(uWS::WebSocket<uWS::SERVER>& w
     std::cout << response << std::endl;
     ws.send(response.data(), response.length(), uWS::TEXT);
 }
-
-

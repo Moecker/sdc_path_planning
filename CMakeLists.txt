@@ -8,19 +8,21 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources 
   src/KeepLanePathPlanner.h
+  src/KeepLanePathPlanner.cpp
   src/OutputPath.h
   src/PathPlannerInput.h
   src/CartesianPoint.h
+  src/HighwayMap.h
   src/HighwayMap.cpp
   src/FrenetPoint.h
   src/PathPlanner.h
   src/SimpleSplineBasedPlanner.h
+  src/SimpleSplineBasedPlanner.cpp
   src/spline.h
   src/OtherCar.h
-  src/main.cpp
-  src/SimpleSplineBasedPlanner.cpp
+  src/WebSocketMessageHandler.h
   src/WebSocketMessageHandler.cpp
-  src/KeepLanePathPlanner.cpp
+  src/main.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 

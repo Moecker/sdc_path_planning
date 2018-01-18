@@ -11,12 +11,12 @@
 class PathPlanner
 {
   public:
-    explicit PathPlanner(const HighwayMap& map, int starting_lane) : map(map), targetLane(starting_lane) {}
+    explicit PathPlanner(const HighwayMap& map, int starting_lane) : map_(map), target_lane_(starting_lane) {}
     virtual std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) = 0;
 
   protected:
-    const HighwayMap& map;
-    int targetLane;
+    const HighwayMap& map_;
+    int target_lane_;
 };
 
 #endif  // PATH_PLANNING_PATHPLANNER_H

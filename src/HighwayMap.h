@@ -1,38 +1,38 @@
-//
-// Created by Stanislav Olekhnovich on 13/10/2017.
-//
+///
+/// @file
+///
 
 #ifndef PATH_PLANNING_HIGHWAYMAP_H
 #define PATH_PLANNING_HIGHWAYMAP_H
 
+#include <cmath>
 #include <string>
 #include <vector>
-#include <cmath>
 
 #include "CartesianPoint.h"
 #include "FrenetPoint.h"
 
 class HighwayMap
 {
-public:
-    HighwayMap(const std::string& highwayMapCsvPath);
-    CartesianPoint FrenetToCartesian(const FrenetPoint& frenetPoint) const;
-    FrenetPoint CartesianToFrenet(const CartesianPoint& cartesianPoint) const;
-    int NextWaypoint(CartesianPoint currentVehicleLocation) const;
-    int ClosestWaypoint(CartesianPoint currentVehicleLocation) const;
+  public:
+    HighwayMap(const std::string& highway_map_csv_path);
+    CartesianPoint FrenetToCartesian(const FrenetPoint& frenet_point) const;
+    FrenetPoint CartesianToFrenet(const CartesianPoint& cartesian_point) const;
+    int NextWaypoint(CartesianPoint current_vehicle_location) const;
+    int ClosestWaypoint(CartesianPoint current_vehicle_location) const;
 
-private:
-    std::vector<double> mapPointsX;
-    std::vector<double> mapPointsY;
-    std::vector<double> mapPointsS;
-    std::vector<double> mapPointsDX;
-    std::vector<double> mapPointsDY;
+  private:
+    std::vector<double> map_points_x_;
+    std::vector<double> map_points_y_;
+    std::vector<double> map_points_s_;
+    std::vector<double> map_points_dx_;
+    std::vector<double> map_points_dy_;
 
-    void ReadMapFromCsvFile(const std::string& highwayMapCsvPath);
+    void ReadMapFromCsvFile(const std::string& highway_map_csv_path);
     inline double EuclidDistance(CartesianPoint p1, CartesianPoint p2) const
     {
-        return sqrt((p2.x-p1.x)*(p2.x-p1.x)+(p2.y-p1.y)*(p2.y-p1.y));
+        return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
     }
 };
 
-#endif //PATH_PLANNING_HIGHWAYMAP_H
+#endif  // PATH_PLANNING_HIGHWAYMAP_H
