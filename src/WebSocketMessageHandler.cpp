@@ -76,8 +76,8 @@ string WebSocketMessageHandler::GetMessageContent(const string& message)
 {
     string content;
 
-    bool hasNullContent = (message.find("null") != string::npos);
-    if (hasNullContent)
+    bool has_null_content = (message.find("null") != string::npos);
+    if (has_null_content)
         return content;
 
     auto b1 = message.find_first_of('[');
