@@ -31,7 +31,7 @@ class WebSocketMessageHandler
 
     void SendDefaultResponse(uWS::WebSocket<uWS::SERVER>& ws) const;
 
-	PathPlanner& path_planner_;
+    PathPlanner& path_planner_;
 };
 
 #endif  // PF_WEBSOCKETMESSAGEHANDLER_H
