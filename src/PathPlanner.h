@@ -1,6 +1,6 @@
-//
-// Created by Stanislav Olekhnovich on 16/10/2017.
-//
+///
+/// @file
+///
 
 #ifndef PATH_PLANNING_PATHPLANNER_H
 #define PATH_PLANNING_PATHPLANNER_H
@@ -10,14 +10,13 @@
 
 class PathPlanner
 {
-public:
-    explicit PathPlanner(const HighwayMap &map, int startingLane) : map(map), targetLane(startingLane) {}
+  public:
+    explicit PathPlanner(const HighwayMap& map, int starting_lane) : map(map), targetLane(starting_lane) {}
     virtual std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) = 0;
 
-protected:
+  protected:
     const HighwayMap& map;
     int targetLane;
 };
 
-
-#endif //PATH_PLANNING_PATHPLANNER_H
+#endif  // PATH_PLANNING_PATHPLANNER_H

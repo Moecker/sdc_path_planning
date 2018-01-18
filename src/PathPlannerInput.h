@@ -1,6 +1,6 @@
-//
-// Created by Stanislav Olekhnovich on 12/10/2017.
-//
+///
+/// @file
+///
 
 #ifndef PATH_PLANNING_PATHPLANNERINPUT_H
 #define PATH_PLANNING_PATHPLANNERINPUT_H
@@ -13,19 +13,18 @@
 
 struct PathPlannerInput
 {
-    CartesianPoint LocationCartesian;
-    FrenetPoint LocationFrenet;
-    FrenetPoint PathEndpointFrenet;
+    CartesianPoint cartesian_location;
+    FrenetPoint fenet_location;
+    FrenetPoint path_endpoint_frenet;
 
-    double Speed;
+    double speed;
 
-    std::vector<CartesianPoint> Path;
+    std::vector<CartesianPoint> path;
 
-    std::vector<double> PreviousPathX;
-    std::vector<double> PreviousPathY;
+    std::vector<double> previous_path_x;
+    std::vector<double> previous_path_y;
 
-    std::vector<OtherCar> OtherCars;
+    std::vector<OtherCar> other_cars;
 };
 
-
-#endif //PATH_PLANNING_PATHPLANNERINPUT_H
+#endif  // PATH_PLANNING_PATHPLANNERINPUT_H

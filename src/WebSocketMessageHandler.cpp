@@ -12,8 +12,8 @@ string WebSocketMessageHandler::CreateResponseMessage(const std::vector<Cartesia
     std::vector<double> pathY;
     for (auto& p: path)
     {
-        pathX.push_back(p.X);
-        pathY.push_back(p.Y);
+        pathX.push_back(p.x);
+        pathY.push_back(p.y);
     }
 
     msgJson["next_x"] = pathX;
@@ -60,10 +60,10 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
     for (auto& otherCarData : sensorFusionData)
     {
         OtherCar otherCar;
-        otherCar.LocationCartesian = { otherCarData[1], otherCarData[2] };
-        otherCar.XAxisSpeed = otherCarData[3];
-        otherCar.YAxisSpeed = otherCarData[4];
-        otherCar.LocationFrenet = { otherCarData[5], otherCarData[6] };
+        otherCar.cartesian_location = { otherCarData[1], otherCarData[2] };
+        otherCar.x_axis_speed = otherCarData[3];
+        otherCar.y_axis_speed = otherCarData[4];
+        otherCar.frenet_location = { otherCarData[5], otherCarData[6] };
 
         pathPlannerInput.OtherCars.push_back(otherCar);
     }

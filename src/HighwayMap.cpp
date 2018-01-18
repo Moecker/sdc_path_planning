@@ -17,7 +17,7 @@ CartesianPoint HighwayMap::FrenetToCartesian(const FrenetPoint& frenetPoint) con
 {
     int previousPoint = -1;
 
-    while(frenetPoint.S > mapPointsS[previousPoint+1] && (previousPoint < (int)(mapPointsS.size()-1) ))
+    while(frenetPoint.s > mapPointsS[previousPoint+1] && (previousPoint < (int)(mapPointsS.size()-1) ))
     {
         previousPoint++;
     }
@@ -26,15 +26,15 @@ CartesianPoint HighwayMap::FrenetToCartesian(const FrenetPoint& frenetPoint) con
 
     double heading = atan2((mapPointsY[wp2]-mapPointsY[previousPoint]),(mapPointsX[wp2]-mapPointsX[previousPoint]));
     // the x,y,s along the segment
-    double seg_s = (frenetPoint.S-mapPointsS[previousPoint]);
+    double seg_s = (frenetPoint.s-mapPointsS[previousPoint]);
 
     double seg_x = mapPointsX[previousPoint]+seg_s*cos(heading);
     double seg_y = mapPointsY[previousPoint]+seg_s*sin(heading);
 
     double perp_heading = heading-M_PI_2;
 
-    double x = seg_x + frenetPoint.D * cos(perp_heading);
-    double y = seg_y + frenetPoint.D * sin(perp_heading);
+    double x = seg_x + frenetPoint.d * cos(perp_heading);
+    double y = seg_y + frenetPoint.d * sin(perp_heading);
 
     return {x,y};
 }
@@ -52,8 +52,8 @@ FrenetPoint HighwayMap::CartesianToFrenet(const CartesianPoint& cartesianPoint) 
 
     double n_x = mapPointsX[next_wp]-mapPointsX[prev_wp];
     double n_y = mapPointsY[next_wp]-mapPointsY[prev_wp];
-    double x_x = cartesianPoint.X - mapPointsX[prev_wp];
-    double x_y = cartesianPoint.Y - mapPointsY[prev_wp];
+    double x_x = cartesianPoint.x - mapPointsX[prev_wp];
+    double x_y = cartesianPoint.y - mapPointsY[prev_wp];
 
     // find the projection of x onto n
     double proj_norm = (x_x*n_x+x_y*n_y)/(n_x*n_x+n_y*n_y);
@@ -93,9 +93,9 @@ int HighwayMap::NextWaypoint(CartesianPoint currentVehicleLocation) const
     double map_x = mapPointsX[closestWaypoint];
     double map_y = mapPointsY[closestWaypoint];
 
-    double heading = atan2( (map_y- currentVehicleLocation.Y),(map_x- currentVehicleLocation.X) );
+    double heading = atan2( (map_y- currentVehicleLocation.y),(map_x- currentVehicleLocation.x) );
 
-    double angle = std::abs(currentVehicleLocation.Theta - heading);
+    double angle = std::abs(currentVehicleLocation.theta - heading);
 
     if(angle > M_PI_4)
     {

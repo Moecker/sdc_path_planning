@@ -31,7 +31,7 @@ private:
     void ReadMapFromCsvFile(const std::string& highwayMapCsvPath);
     inline double EuclidDistance(CartesianPoint p1, CartesianPoint p2) const
     {
-        return sqrt((p2.X-p1.X)*(p2.X-p1.X)+(p2.Y-p1.Y)*(p2.Y-p1.Y));
+        return sqrt((p2.x-p1.x)*(p2.x-p1.x)+(p2.y-p1.y)*(p2.y-p1.y));
     }
 };
 

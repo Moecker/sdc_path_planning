@@ -1,10 +1,12 @@
-//
-// Created by Stanislav Olekhnovich on 12/10/2017.
-//
+///
+/// @file
+///
 
 #ifndef PATH_PLANNING_OUTPUTPATH_H
 #define PATH_PLANNING_OUTPUTPATH_H
 
+#include <CartesianPoint.h>
+#include <vector>
 
 struct OutputPath
 {
@@ -14,5 +16,4 @@ struct OutputPath
     std::vector<CartesianPoint> Path;
 };
 
-
-#endif //PATH_PLANNING_OUTPUTPATH_H
+#endif  // PATH_PLANNING_OUTPUTPATH_H

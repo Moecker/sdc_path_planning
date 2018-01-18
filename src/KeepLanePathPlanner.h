@@ -1,6 +1,6 @@
-//
-// Created by Stanislav Olekhnovich on 12/10/2017.
-//
+///
+/// @file
+///
 
 #ifndef PATH_PLANNING_KEEPLANEPATHPLANNER_H
 #define PATH_PLANNING_KEEPLANEPATHPLANNER_H
@@ -9,10 +9,9 @@
 
 class KeepLanePathPlanner : public PathPlanner
 {
-public:
-    explicit KeepLanePathPlanner(const HighwayMap &map, int startingLane): PathPlanner(map, startingLane) {};
+  public:
+    explicit KeepLanePathPlanner(const HighwayMap& map, int starting_lane) : PathPlanner(map, starting_lane){};
     std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) override;
 };
 
-
-#endif //PATH_PLANNING_KEEPLANEPATHPLANNER_H
+#endif  // PATH_PLANNING_KEEPLANEPATHPLANNER_H

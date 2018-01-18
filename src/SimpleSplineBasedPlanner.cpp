@@ -45,13 +45,13 @@ std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerIn
 
 bool SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput &input) const
 {
-    double egoPredictedEndpointS = !input.Path.empty() ? input.PathEndpointFrenet.S : input.LocationFrenet.S;
+    double egoPredictedEndpointS = !input.Path.empty() ? input.PathEndpointFrenet.s : input.LocationFrenet.s;
 
     for (auto& otherCar : input.OtherCars)
     {
         if (otherCar.IsInLane(targetLane))
         {
-            double otherCarPredictedS = otherCar.LocationFrenet.S +
+            double otherCarPredictedS = otherCar.frenet_location.s +
                                         (input.Path.size() * SimulatorRunloopPeriod * otherCar.Speed2DMagnitude() * 0.447);
             if (otherCarPredictedS > egoPredictedEndpointS &&
                     (otherCarPredictedS - egoPredictedEndpointS) < CriticalThresholdInMeters)
@@ -65,13 +65,13 @@ SimpleSplineBasedPlanner::AnchorPointsGenerationResult SimpleSplineBasedPlanner:
 {
     CartesianPoint referencePoint = input.LocationCartesian;
     // FIXME: Why do we do this?
-    referencePoint.Theta = deg2rad(referencePoint.Theta);
+    referencePoint.theta = deg2rad(referencePoint.theta);
 
     std::vector<CartesianPoint> anchors;
     if (input.Path.empty() || input.Path.size() == 1)
     {
-        anchors.push_back({input.LocationCartesian.X - cos(input.LocationCartesian.Theta),
-                           input.LocationCartesian.Y - sin(input.LocationCartesian.Theta)});
+        anchors.push_back({input.LocationCartesian.x - cos(input.LocationCartesian.theta),
+                           input.LocationCartesian.y - sin(input.LocationCartesian.theta)});
         anchors.push_back(referencePoint);
     }
     else
@@ -79,7 +79,7 @@ SimpleSplineBasedPlanner::AnchorPointsGenerationResult SimpleSplineBasedPlanner:
         referencePoint = input.Path.back();
         auto prevPoint = input.Path[input.Path.size() - 2];
         
-        referencePoint.Theta = atan2(referencePoint.Y - prevPoint.Y, referencePoint.X - prevPoint.X);
+        referencePoint.theta = atan2(referencePoint.y - prevPoint.y, referencePoint.x - prevPoint.x);
 
         anchors.push_back(prevPoint);
         anchors.push_back(referencePoint);
@@ -87,7 +87,7 @@ SimpleSplineBasedPlanner::AnchorPointsGenerationResult SimpleSplineBasedPlanner:
 
     for (auto& i: {30, 60, 90})
     {
-        anchors.push_back(map.FrenetToCartesian({input.LocationFrenet.S + i, FrenetPoint::LaneCenterDCoord(targetLane)}));
+        anchors.push_back(map.FrenetToCartesian({input.LocationFrenet.s + i, FrenetPoint::LaneCenterDCoord(targetLane)}));
     }
 
     return { referencePoint, anchors };
@@ -133,8 +133,8 @@ tk::spline SimpleSplineBasedPlanner::GetSplineFromAnchorPoints(const std::vector
     std::vector<double> newPathAnchorsY;
     for (auto& p: newPathAnchorPoints)
     {
-        newPathAnchorsX.push_back(p.X);
-        newPathAnchorsY.push_back(p.Y);
+        newPathAnchorsX.push_back(p.x);
+        newPathAnchorsY.push_back(p.y);
     }
     tk::spline spline;
     spline.set_points(newPathAnchorsX, newPathAnchorsY);

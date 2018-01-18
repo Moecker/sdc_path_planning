@@ -1,25 +1,29 @@
-//
-// Created by Stanislav Olekhnovich on 13/10/2017.
-//
+///
+/// @file
+///
 
 #ifndef PATH_PLANNING_FRENETPOINT_H
 #define PATH_PLANNING_FRENETPOINT_H
 
-const double LaneWidthInD = 4.0;
+const double kLaneWidthInD = 4.0;
 
 struct FrenetPoint
 {
-    double S;
-    double D;
-
     FrenetPoint() = default;
-    FrenetPoint(double S, double D) : S(S), D(D) {}
+    FrenetPoint(double s, double d) : s(s), d(d) {}
 
-    inline static double LaneCenterDCoord(int laneNumber) { return LaneWidthInD * laneNumber + LaneWidthInD / 2.0; };
-    inline bool IsInLane(int laneNumber) const { return D < LaneWidthInD * (laneNumber + 1)  &&
-                D > LaneWidthInD * laneNumber; }
+    inline static double LaneCenterDCoord(int lane_number)
+    {
+        return kLaneWidthInD * lane_number + kLaneWidthInD / 2.0;
+    };
 
+    inline bool IsInLane(int lane_number) const
+    {
+        return d < kLaneWidthInD * (lane_number + 1) && d > kLaneWidthInD * lane_number;
+    }
+
+    double s;
+    double d;
 };
 
-
-#endif //PATH_PLANNING_FRENETPOINT_H
+#endif  // PATH_PLANNING_FRENETPOINT_H
