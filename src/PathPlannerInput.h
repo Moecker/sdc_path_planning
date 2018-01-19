@@ -14,7 +14,7 @@
 struct PathPlannerInput
 {
     CartesianPoint cartesian_location;
-    FrenetPoint fenet_location;
+    FrenetPoint frenet_location;
     FrenetPoint path_endpoint_frenet;
 
     double speed;

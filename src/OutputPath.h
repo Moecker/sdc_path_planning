@@ -10,10 +10,10 @@
 
 struct OutputPath
 {
-    std::vector<double> PathX;
-    std::vector<double> PathY;
+    std::vector<double> path_x;
+    std::vector<double> path_y;
 
-    std::vector<CartesianPoint> Path;
+    std::vector<CartesianPoint> path;
 };
 
 #endif  // PATH_PLANNING_OUTPUTPATH_H

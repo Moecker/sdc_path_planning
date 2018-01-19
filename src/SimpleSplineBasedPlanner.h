@@ -29,6 +29,7 @@ class SimpleSplineBasedPlanner : public PathPlanner
         std::vector<CartesianPoint> anchor_points;
     };
 
+    void AdjustTargetSpeed(PathPlannerInput input);
     bool IsTooCloseToOtherCar(const PathPlannerInput& input) const;
 
     std::vector<CartesianPoint> ConvertPointsToLocalSystem(const std::vector<CartesianPoint>& new_path_anchor_points,

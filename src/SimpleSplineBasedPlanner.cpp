@@ -8,7 +8,7 @@
 
 #include "SimpleSplineBasedPlanner.h"
 
-double deg2rad(double x)
+double Deg2Rad(double x)
 {
     return x * M_PI / 180;
 }
@@ -17,25 +17,18 @@ double MphToMetersPerSecond(double mph_value)
     return mph_value / 2.24;
 }
 
-const double KDefaultAcceleration = .224;
-const double KMaxSpeed = 49.5;
+static const double KDefaultAcceleration = 0.224;
+static const double KMaxSpeed = 49.5;
+static const double kCriticalThresholdInMeters = 30.0;
+static const double kSimulatorRunloopPeriod = 0.02;
+
 static const int kXAxisPlanningHorizon = 30;
-const double kCriticalThresholdInMeters = 30;
-const double kSimulatorRunloopPeriod = 0.02;
 static const int kMaxNumberOfPointsInPath = 50;
-const int kLeftmostLaneNumber = 0;
+static const int kLeftmostLaneNumber = 0;
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
 {
-    if (IsTooCloseToOtherCar(input))
-    {
-        target_speed_ -= KDefaultAcceleration;
-        target_lane_ = kLeftmostLaneNumber;
-    }
-    else if (target_speed_ < KMaxSpeed)
-    {
-        target_speed_ += KDefaultAcceleration;
-    }
+    AdjustTargetSpeed(input);
 
     auto anchors_generation_result = GenerateAnchorPoints(input);
     auto anchors_local =
@@ -51,9 +44,22 @@ std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerIn
     return output_path;
 }
 
+void SimpleSplineBasedPlanner::AdjustTargetSpeed(PathPlannerInput input)
+{
+    if (IsTooCloseToOtherCar(input))
+    {
+        target_speed_ -= KDefaultAcceleration;
+        target_lane_ = kLeftmostLaneNumber;
+    }
+    else if (target_speed_ < KMaxSpeed)
+    {
+        target_speed_ += KDefaultAcceleration;
+    }
+}
+
 bool SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& input) const
 {
-    double ego_predicted_end_point_s = !input.path.empty() ? input.path_endpoint_frenet.s : input.fenet_location.s;
+    double ego_predicted_end_point_s = !input.path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
 
     for (auto& other_car : input.other_cars)
     {
@@ -72,33 +78,34 @@ bool SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& inpu
 SimpleSplineBasedPlanner::AnchorPointsGenerationResult SimpleSplineBasedPlanner::GenerateAnchorPoints(
     const PathPlannerInput& input) const
 {
-    CartesianPoint reference_point = input.cartesian_location;
-
-    /// @todo Why do we do this?
-    reference_point.theta = deg2rad(reference_point.theta);
+    CartesianPoint reference_point{};
 
     std::vector<CartesianPoint> anchors;
     if (input.path.empty() || input.path.size() == 1)
     {
         anchors.push_back({input.cartesian_location.x - cos(input.cartesian_location.theta),
                            input.cartesian_location.y - sin(input.cartesian_location.theta)});
+
+        reference_point = input.cartesian_location;
+        reference_point.theta = Deg2Rad(reference_point.theta);
         anchors.push_back(reference_point);
     }
     else
     {
         reference_point = input.path.back();
-        auto prevPoint = input.path[input.path.size() - 2];
+        auto previous_point = input.path[input.path.size() - 2];
 
-        reference_point.theta = atan2(reference_point.y - prevPoint.y, reference_point.x - prevPoint.x);
+        reference_point.theta = atan2(reference_point.y - previous_point.y, reference_point.x - previous_point.x);
 
-        anchors.push_back(prevPoint);
+        anchors.push_back(previous_point);
         anchors.push_back(reference_point);
     }
 
-    for (auto& i : {30, 60, 90})
+    double distance_at{0.0};
+    for (auto& i : {distance_at = 30, distance_at = 60, distance_at = 90})
     {
         anchors.push_back(
-            map_.FrenetToCartesian({input.fenet_location.s + i, FrenetPoint::LaneCenterDCoord(target_lane_)}));
+            map_.FrenetToCartesian({input.frenet_location.s + i, FrenetPoint::LaneCenterDCoord(target_lane_)}));
     }
 
     return {reference_point, anchors};

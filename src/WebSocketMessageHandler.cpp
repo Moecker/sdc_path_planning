@@ -33,8 +33,8 @@ string WebSocketMessageHandler::ProcessMessageContent(string& content)
     {
         auto data = json_content[1];
         auto path_planner_input = ReadPlannerInput(data);
-        auto output = path_planner_.GeneratePath(path_planner_input);
-        response = CreateResponseMessage(output);
+        auto output_path = path_planner_.GeneratePath(path_planner_input);
+        response = CreateResponseMessage(output_path);
     }
     return response;
 }
@@ -44,7 +44,7 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
     PathPlannerInput path_planner_input;
 
     path_planner_input.cartesian_location = {data["x"], data["y"], data["yaw"]};
-    path_planner_input.fenet_location = {data["s"], data["d"]};
+    path_planner_input.frenet_location = {data["s"], data["d"]};
     path_planner_input.speed = data["speed"];
     path_planner_input.previous_path_x = data["previous_path_x"].get<std::vector<double>>();
     path_planner_input.previous_path_y = data["previous_path_y"].get<std::vector<double>>();
