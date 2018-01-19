@@ -17,10 +17,10 @@ class SimpleSplineBasedPlanner : public PathPlanner
     std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) override;
 
   private:
-    struct AnchorPointsGenerationResult
+    struct AnchorPoints
     {
-        AnchorPointsGenerationResult(const CartesianPoint& reference_point,
-                                     const std::vector<CartesianPoint>& anchor_points)
+        AnchorPoints(const CartesianPoint& reference_point,
+                     const std::vector<CartesianPoint>& anchor_points)
                 : reference_point(reference_point), anchor_points(anchor_points)
         {
         }
@@ -29,20 +29,23 @@ class SimpleSplineBasedPlanner : public PathPlanner
         std::vector<CartesianPoint> anchor_points;
     };
 
-    void AdjustTargetSpeed(PathPlannerInput input);
+    void DecideDrivingPolicyForSpeedAndLane(PathPlannerInput input);
+    void PrepareLaneChange();
+
     bool IsTooCloseToOtherCar(const PathPlannerInput& input) const;
 
     std::vector<CartesianPoint> ConvertPointsToLocalSystem(const std::vector<CartesianPoint>& new_path_anchor_points,
                                                            const CartesianPoint& local_reference_point) const;
 
-    tk::spline GetSplineFromAnchorPoints(const std::vector<CartesianPoint>& new_path_anchor_points) const;
+    tk::spline MakeSplineFromAnchorPoints(const std::vector<CartesianPoint>& new_path_anchor_points) const;
 
     std::vector<CartesianPoint> GenerateNewPointsWithSpline(const tk::spline& new_path_spline,
                                                             int points_left_in_current_path) const;
 
-    AnchorPointsGenerationResult GenerateAnchorPoints(const PathPlannerInput& input) const;
+    AnchorPoints GenerateAnchorPoints(const PathPlannerInput& input) const;
 
     double target_speed_;
+    void ObeyRightLaneDrivingPolicy();
 };
 
 #endif  // PATH_PLANNING_SIMPLESPLINEBASEDPLANNER_H

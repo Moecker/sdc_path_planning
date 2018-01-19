@@ -28,28 +28,32 @@ static const int kLeftmostLaneNumber = 0;
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
 {
-    AdjustTargetSpeed(input);
+    DecideDrivingPolicyForSpeedAndLane(input);
 
-    auto anchors_generation_result = GenerateAnchorPoints(input);
+    auto anchors_cartesian = GenerateAnchorPoints(input);
     auto anchors_local =
-        ConvertPointsToLocalSystem(anchors_generation_result.anchor_points, anchors_generation_result.reference_point);
+        ConvertPointsToLocalSystem(anchors_cartesian.anchor_points, anchors_cartesian.reference_point);
 
-    auto anchors_spline_based = GetSplineFromAnchorPoints(anchors_local);
-    auto new_path_points = GenerateNewPointsWithSpline(anchors_spline_based, (int)input.path.size());
+    auto spline = MakeSplineFromAnchorPoints(anchors_local);
+    auto new_path_points = GenerateNewPointsWithSpline(spline, static_cast<int>(input.previous_path.size()));
 
-    std::vector<CartesianPoint> output_path = {input.path};
+    std::vector<CartesianPoint> output_path = {input.previous_path};
     for (auto& p : new_path_points)
-        output_path.push_back(p.ToGlobal(anchors_generation_result.reference_point));
+    {
+        output_path.push_back(p.ToGlobal(anchors_cartesian.reference_point));
+    }
 
     return output_path;
 }
 
-void SimpleSplineBasedPlanner::AdjustTargetSpeed(PathPlannerInput input)
+void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInput input)
 {
+    /// @todo Decide what is the best lane to be in a couple of seconds
+    ObeyRightLaneDrivingPolicy();
     if (IsTooCloseToOtherCar(input))
     {
         target_speed_ -= KDefaultAcceleration;
-        target_lane_ = kLeftmostLaneNumber;
+        PrepareLaneChange();
     }
     else if (target_speed_ < KMaxSpeed)
     {
@@ -59,14 +63,17 @@ void SimpleSplineBasedPlanner::AdjustTargetSpeed(PathPlannerInput input)
 
 bool SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& input) const
 {
-    double ego_predicted_end_point_s = !input.path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
+    double ego_predicted_end_point_s = !input.previous_path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
 
     for (auto& other_car : input.other_cars)
     {
         if (other_car.IsInLane(target_lane_))
         {
-            double other_car_predicted_s = other_car.frenet_location.s + (input.path.size() * kSimulatorRunloopPeriod *
-                                                                          other_car.Speed2DMagnitude() * 0.447);
+            auto predicted_increase_of_s_wrt_our_car = 
+                input.previous_path.size() * kSimulatorRunloopPeriod *
+                other_car.Speed2DMagnitude() * 0.447;
+
+            double other_car_predicted_s = other_car.frenet_location.s + predicted_increase_of_s_wrt_our_car;
             if (other_car_predicted_s > ego_predicted_end_point_s &&
                 (other_car_predicted_s - ego_predicted_end_point_s) < kCriticalThresholdInMeters)
                 return true;
@@ -75,13 +82,13 @@ bool SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& inpu
     return false;
 }
 
-SimpleSplineBasedPlanner::AnchorPointsGenerationResult SimpleSplineBasedPlanner::GenerateAnchorPoints(
+SimpleSplineBasedPlanner::AnchorPoints SimpleSplineBasedPlanner::GenerateAnchorPoints(
     const PathPlannerInput& input) const
 {
     CartesianPoint reference_point{};
 
     std::vector<CartesianPoint> anchors;
-    if (input.path.empty() || input.path.size() == 1)
+    if (input.previous_path.empty() || input.previous_path.size() == 1)
     {
         anchors.push_back({input.cartesian_location.x - cos(input.cartesian_location.theta),
                            input.cartesian_location.y - sin(input.cartesian_location.theta)});
@@ -92,8 +99,8 @@ SimpleSplineBasedPlanner::AnchorPointsGenerationResult SimpleSplineBasedPlanner:
     }
     else
     {
-        reference_point = input.path.back();
-        auto previous_point = input.path[input.path.size() - 2];
+        reference_point = input.previous_path.back();
+        auto previous_point = input.previous_path[input.previous_path.size() - 2];
 
         reference_point.theta = atan2(reference_point.y - previous_point.y, reference_point.x - previous_point.x);
 
@@ -102,13 +109,28 @@ SimpleSplineBasedPlanner::AnchorPointsGenerationResult SimpleSplineBasedPlanner:
     }
 
     double distance_at{0.0};
-    for (auto& i : {distance_at = 30, distance_at = 60, distance_at = 90})
+    const double kSplineInterpolationDistanceFactor = 30.0;
+    for (auto& i : {distance_at = kSplineInterpolationDistanceFactor,
+        distance_at = 2 * kSplineInterpolationDistanceFactor,
+        distance_at = 3 * kSplineInterpolationDistanceFactor})
     {
         anchors.push_back(
             map_.FrenetToCartesian({input.frenet_location.s + i, FrenetPoint::LaneCenterDCoord(target_lane_)}));
     }
 
     return {reference_point, anchors};
+}
+
+void SimpleSplineBasedPlanner::ObeyRightLaneDrivingPolicy()
+{
+    /// @todo Check if save to change to right lane
+    target_lane_ = target_lane_;
+}
+
+void SimpleSplineBasedPlanner::PrepareLaneChange()
+{
+    /// @todo Check if save to change to left lane
+    target_lane_ = kLeftmostLaneNumber;
 }
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::ConvertPointsToLocalSystem(
@@ -126,15 +148,15 @@ std::vector<CartesianPoint> SimpleSplineBasedPlanner::ConvertPointsToLocalSystem
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GenerateNewPointsWithSpline(const tk::spline& new_path_spline,
                                                                                   int points_left_in_current_path) const
 {
-    const double path_end_point_x = 30;
-    double pathEndpointY = new_path_spline(path_end_point_x);
-    double pathLength = sqrt(path_end_point_x * path_end_point_x + pathEndpointY * pathEndpointY);
+    const double path_end_point_x = 30.0;
+    double path_end_point_y = new_path_spline(path_end_point_x);
+    double path_length = sqrt(path_end_point_x * path_end_point_x + path_end_point_y * path_end_point_y);
 
     std::vector<CartesianPoint> path_points;
 
-    double previous_x = 0;
-    double numberOfPoints = pathLength / (kSimulatorRunloopPeriod * MphToMetersPerSecond(target_speed_));
-    double x_axis_step = kXAxisPlanningHorizon / numberOfPoints;
+    double previous_x = 0.0;
+    double number_of_points = path_length / (kSimulatorRunloopPeriod * MphToMetersPerSecond(target_speed_));
+    double x_axis_step = kXAxisPlanningHorizon / number_of_points;
 
     for (int i = 1; i <= kMaxNumberOfPointsInPath - points_left_in_current_path; i++)
     {
@@ -147,7 +169,7 @@ std::vector<CartesianPoint> SimpleSplineBasedPlanner::GenerateNewPointsWithSplin
     return path_points;
 }
 
-tk::spline SimpleSplineBasedPlanner::GetSplineFromAnchorPoints(
+tk::spline SimpleSplineBasedPlanner::MakeSplineFromAnchorPoints(
     const std::vector<CartesianPoint>& new_path_anchor_points) const
 {
     std::vector<double> new_path_anchors_x;

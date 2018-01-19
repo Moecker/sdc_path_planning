@@ -44,19 +44,23 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
     PathPlannerInput path_planner_input;
 
     path_planner_input.cartesian_location = {data["x"], data["y"], data["yaw"]};
+
     path_planner_input.frenet_location = {data["s"], data["d"]};
+    path_planner_input.path_endpoint_frenet = {data["end_path_s"], data["end_path_d"]};
+
     path_planner_input.speed = data["speed"];
+
     path_planner_input.previous_path_x = data["previous_path_x"].get<std::vector<double>>();
     path_planner_input.previous_path_y = data["previous_path_y"].get<std::vector<double>>();
 
     assert(path_planner_input.previous_path_x.size() == path_planner_input.previous_path_y.size());
     for (int i = 0; i < path_planner_input.previous_path_x.size(); i++)
     {
-        path_planner_input.path.emplace_back(path_planner_input.previous_path_x[i],
+        path_planner_input.previous_path.emplace_back(path_planner_input.previous_path_x[i],
                                              path_planner_input.previous_path_y[i]);
     }
 
-    path_planner_input.path_endpoint_frenet = {data["end_path_s"], data["end_path_d"]};
+
     auto sensor_fusion_data = data["sensor_fusion"].get<std::vector<std::vector<double>>>();
     for (auto& other_car_data : sensor_fusion_data)
     {

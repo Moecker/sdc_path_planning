@@ -19,7 +19,7 @@ struct FrenetPoint
 
     inline bool IsInLane(int lane_number) const
     {
-        return d < kLaneWidthInD * (lane_number + 1) && d > kLaneWidthInD * lane_number;
+        return (d < (kLaneWidthInD * (lane_number + 1))) && (d > (kLaneWidthInD * lane_number));
     }
 
     double s;

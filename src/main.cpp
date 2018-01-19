@@ -23,6 +23,8 @@ int main(int argc, char* argv[])
 {
     uWS::Hub h;
     HighwayMap map("../data/highway_map.csv");
+
+    // Here we can decide which path planer to choose
     SimpleSplineBasedPlanner path_planner(map, kStartingLane);
     WebSocketMessageHandler handler(path_planner);
 

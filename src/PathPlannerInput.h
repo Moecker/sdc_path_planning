@@ -14,12 +14,13 @@
 struct PathPlannerInput
 {
     CartesianPoint cartesian_location;
+
     FrenetPoint frenet_location;
     FrenetPoint path_endpoint_frenet;
 
     double speed;
 
-    std::vector<CartesianPoint> path;
+    std::vector<CartesianPoint> previous_path;
 
     std::vector<double> previous_path_x;
     std::vector<double> previous_path_y;
