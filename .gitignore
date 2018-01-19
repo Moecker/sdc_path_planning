@@ -2,3 +2,6 @@ build/
 /_build_make
 /_build_vs
 /.ipynb_checkpoints
+/src/uWS
+/src/libuv
+/src/openssl
