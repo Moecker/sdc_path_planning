@@ -5,3 +5,4 @@ build/
 /src/uWS
 /src/libuv
 /src/openssl
+/src/zlib-1.2.11

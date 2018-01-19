@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
+add_definitions(-D_USE_MATH_DEFINES -DSSL_MODE_RELEASE_BUFFERS)
+
 set(sources 
   src/KeepLanePathPlanner.h
   src/KeepLanePathPlanner.cpp
@@ -43,3 +45,4 @@ target_link_libraries(path-planning z ssl uv uWS)
 
 target_include_directories(path-planning PRIVATE src)
 target_include_directories(path-planning PRIVATE src/libuv)
+target_include_directories(path-planning PRIVATE src/zlib-1.2.11)
