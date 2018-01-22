@@ -9,10 +9,10 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 add_definitions(-D_USE_MATH_DEFINES -DSSL_MODE_RELEASE_BUFFERS)
 
 # @todo Check whether we need these
-find_package(ZLIB)
-find_package(libuv)
-find_package(ssl)
-find_package(uWS)
+# find_package(ZLIB)
+# find_package(libuv)
+# find_package(ssl)
+# find_package(uWS)
 
 set(sources 
   src/KeepLanePathPlanner.h
@@ -49,13 +49,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
 
 if(WIN32)
-  # @todo
+  # @todo Check whether we need these
+  # target_include_directories(path-planning PRIVATE src)
+  # target_include_directories(path-planning PRIVATE src/libuv)
+  # target_include_directories(path-planning PRIVATE src/zlib-1.2.11)
 endif()
 
 add_executable(path-planning ${sources})
 
 target_link_libraries(path-planning z ssl uv uWS)
-
-target_include_directories(path-planning PRIVATE src)
-target_include_directories(path-planning PRIVATE src/libuv)
-target_include_directories(path-planning PRIVATE src/zlib-1.2.11)

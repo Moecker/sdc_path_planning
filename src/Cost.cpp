@@ -5,20 +5,20 @@
 #include <map>
 #include "Vehicle.h"
 
-const float REACH_GOAL = pow(10, 6);
-const float EFFICIENCY = pow(10, 5);
+const double REACH_GOAL = pow(10, 6);
+const double EFFICIENCY = pow(10, 5);
 
-float goal_distance_cost(const Vehicle& vehicle,
-                         const vector<Vehicle>& trajectory,
-                         const map<int, vector<Vehicle>>& predictions,
-                         map<string, float>& data)
+double goal_distance_cost(const Vehicle& vehicle,
+                          const vector<Vehicle>& trajectory,
+                          const map<int, vector<Vehicle>>& predictions,
+                          map<string, int>& data)
 {
     /*
     Cost increases based on distance of intended lane (for planning a lane change) and final lane of trajectory.
     Cost of being out of goal lane also becomes larger as vehicle approaches goal distance.
     */
-    float cost;
-    float distance = data["distance_to_goal"];
+    double cost;
+    double distance = data["distance_to_goal"];
     if (distance > 0)
     {
         cost = 1 - 2 * exp(-(abs(2.0 * vehicle.goal_lane - data["intended_lane"] - data["final_lane"]) / distance));
@@ -30,34 +30,34 @@ float goal_distance_cost(const Vehicle& vehicle,
     return cost;
 }
 
-float inefficiency_cost(const Vehicle& vehicle,
-                        const vector<Vehicle>& trajectory,
-                        const map<int, vector<Vehicle>>& predictions,
-                        map<string, float>& data)
+double inefficiency_cost(const Vehicle& vehicle,
+                         const vector<Vehicle>& trajectory,
+                         const map<int, vector<Vehicle>>& predictions,
+                         map<string, int>& data)
 {
     /*
     Cost becomes higher for trajectories with intended lane and final lane that have traffic slower than vehicle's
     target speed.
     */
 
-    float proposed_speed_intended = lane_speed(predictions, data["intended_lane"]);
+    double proposed_speed_intended = lane_speed(predictions, data["intended_lane"]);
     if (proposed_speed_intended < 0)
     {
         proposed_speed_intended = vehicle.target_speed;
     }
 
-    float proposed_speed_final = lane_speed(predictions, data["final_lane"]);
+    double proposed_speed_final = lane_speed(predictions, data["final_lane"]);
     if (proposed_speed_final < 0)
     {
         proposed_speed_final = vehicle.target_speed;
     }
 
-    float cost = (2.0 * vehicle.target_speed - proposed_speed_intended - proposed_speed_final) / vehicle.target_speed;
+    double cost = (2.0 * vehicle.target_speed - proposed_speed_intended - proposed_speed_final) / vehicle.target_speed;
 
     return cost;
 }
 
-float lane_speed(const map<int, vector<Vehicle>>& predictions, int lane)
+double lane_speed(const map<int, vector<Vehicle>>& predictions, int lane)
 {
     /*
     All non ego vehicles in a lane have the same speed, so to get the speed limit for a lane,
@@ -76,34 +76,34 @@ float lane_speed(const map<int, vector<Vehicle>>& predictions, int lane)
     return -1.0;
 }
 
-float calculate_cost(const Vehicle& vehicle,
-                     const map<int, vector<Vehicle>>& predictions,
-                     const vector<Vehicle>& trajectory)
+double calculate_cost(const Vehicle& vehicle,
+                      const map<int, vector<Vehicle>>& predictions,
+                      const vector<Vehicle>& trajectory)
 {
     /*
     Sum weighted cost functions to get total cost for trajectory.
     */
-    map<string, float> trajectory_data = get_helper_data(vehicle, trajectory, predictions);
-    float cost = 0.0;
+    map<string, int> trajectory_data = get_helper_data(vehicle, trajectory, predictions);
+    double cost = 0.0;
 
     // Add additional cost functions here.
     vector<
-        function<float(const Vehicle&, const vector<Vehicle>&, const map<int, vector<Vehicle>>&, map<string, float>&)>>
+        function<double(const Vehicle&, const vector<Vehicle>&, const map<int, vector<Vehicle>>&, map<string, int>&)>>
         cf_list = {goal_distance_cost, inefficiency_cost};
-    vector<float> weight_list = {REACH_GOAL, EFFICIENCY};
+    vector<double> weight_list = {REACH_GOAL, EFFICIENCY};
 
     for (int i = 0; i < cf_list.size(); i++)
     {
-        float new_cost = weight_list[i] * cf_list[i](vehicle, trajectory, predictions, trajectory_data);
+        double new_cost = weight_list[i] * cf_list[i](vehicle, trajectory, predictions, trajectory_data);
         cost += new_cost;
     }
 
     return cost;
 }
 
-map<string, float> get_helper_data(const Vehicle& vehicle,
-                                   const vector<Vehicle>& trajectory,
-                                   const map<int, vector<Vehicle>>& predictions)
+map<string, int> get_helper_data(const Vehicle& vehicle,
+                                 const vector<Vehicle>& trajectory,
+                                 const map<int, vector<Vehicle>>& predictions)
 {
     /*
     Generate helper data to use in cost functions:
@@ -114,9 +114,9 @@ map<string, float> get_helper_data(const Vehicle& vehicle,
     Note that indended_lane and final_lane are both included to help differentiate between planning and executing
     a lane change in the cost functions.
     */
-    map<string, float> trajectory_data;
+    map<string, int> trajectory_data;
     Vehicle trajectory_last = trajectory[1];
-    float intended_lane;
+    int intended_lane;
 
     if (trajectory_last.state.compare("PLCL") == 0)
     {
@@ -131,10 +131,10 @@ map<string, float> get_helper_data(const Vehicle& vehicle,
         intended_lane = trajectory_last.lane;
     }
 
-    float distance_to_goal = vehicle.goal_s - trajectory_last.s;
-    float final_lane = trajectory_last.lane;
+    double distance_to_goal = vehicle.goal_s - trajectory_last.s;
+    int final_lane = trajectory_last.lane;
     trajectory_data["intended_lane"] = intended_lane;
     trajectory_data["final_lane"] = final_lane;
-    trajectory_data["distance_to_goal"] = distance_to_goal;
+    trajectory_data["distance_to_goal"] = static_cast<int>(distance_to_goal);
     return trajectory_data;
 }

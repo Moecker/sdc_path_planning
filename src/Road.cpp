@@ -7,16 +7,13 @@
 #include <string>
 #include "Vehicle.h"
 
-/**
- * Initializes Road
- */
 Road::Road(int speed_limit, double traffic_density, vector<int> lane_speeds)
 {
     this->num_lanes = lane_speeds.size();
     this->lane_speeds = lane_speeds;
     this->speed_limit = speed_limit;
     this->density = traffic_density;
-    this->camera_center = this->update_width / 2;
+    this->camera_center = this->update_width / 2.0;
 }
 
 Road::~Road() {}
@@ -28,12 +25,12 @@ Vehicle Road::get_ego()
 
 void Road::populate_traffic()
 {
-    int start_s = std::max(this->camera_center - (this->update_width / 2), 0);
+    double start_s = std::max(this->camera_center - (this->update_width / 2.0), 0.0);
     for (int l = 0; l < this->num_lanes; l++)
     {
         int lane_speed = this->lane_speeds[l];
         bool vehicle_just_added = false;
-        for (int s = start_s; s < start_s + this->update_width; s++)
+        for (double s = start_s; s < start_s + this->update_width; s++)
         {
             if (vehicle_just_added)
             {
@@ -103,12 +100,12 @@ void Road::add_ego(int lane_num, int s, vector<int> config_data)
 void Road::display(int timestep)
 {
     Vehicle ego = this->vehicles.find(this->ego_key)->second;
-    int s = ego.s;
+    double s = ego.s;
     string state = ego.state;
 
-    this->camera_center = std::max(s, this->update_width / 2);
-    int s_min = std::max(this->camera_center - this->update_width / 2, 0);
-    int s_max = s_min + this->update_width;
+    this->camera_center = std::max(s, this->update_width / 2.0);
+    double s_min = std::max(this->camera_center - this->update_width / 2.0, 0.0);
+    double s_max = s_min + this->update_width;
 
     vector<vector<string> > road;
 
@@ -156,7 +153,7 @@ void Road::display(int timestep)
     }
     ostringstream oss;
     oss << "+Meters ======================+ step: " << timestep << endl;
-    int i = s_min;
+    int i = static_cast<int>(s_min);
     for (int lj = 0; lj < road.size(); lj++)
     {
         if (i % 20 == 0)

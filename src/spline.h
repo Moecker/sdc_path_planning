@@ -51,8 +51,8 @@ class band_matrix
     ~band_matrix(){};                        // destructor
     void resize(int dim, int n_u, int n_l);  // init with dim,n_u,n_l
     int dim() const;                         // matrix dimension
-    int num_upper() const { return m_upper.size() - 1; }
-    int num_lower() const { return m_lower.size() - 1; }
+    int num_upper() const { return static_cast<int>(m_upper.size() - 1); }
+    int num_lower() const { return static_cast<int>(m_lower.size() - 1); }
     // access operator
     double& operator()(int i, int j);       // write
     double operator()(int i, int j) const;  // read
@@ -138,7 +138,7 @@ int band_matrix::dim() const
 {
     if (m_upper.size() > 0)
     {
-        return m_upper[0].size();
+        return static_cast<int>(m_upper[0].size());
     }
     else
     {
@@ -293,7 +293,7 @@ void spline::set_points(const std::vector<double>& x, const std::vector<double>&
     assert(x.size() > 2);
     m_x = x;
     m_y = y;
-    int n = x.size();
+    int n = static_cast<int>(x.size());
     // TODO: maybe sort x and y, rather than returning an error
     for (int i = 0; i < n - 1; i++)
     {
