@@ -143,7 +143,7 @@ void Road::display(int timestep)
                 stringstream buffer;
                 buffer << " ";
                 oss << v_id;
-                for (int buffer_i = oss.str().length(); buffer_i < 3; buffer_i++)
+                for (size_t buffer_i = oss.str().length(); buffer_i < 3; buffer_i++)
                 {
                     buffer << "0";
                 }
@@ -164,7 +164,7 @@ void Road::display(int timestep)
             stringstream buffer;
             stringstream dis;
             dis << i;
-            for (int buffer_i = dis.str().length(); buffer_i < 3; buffer_i++)
+            for (size_t buffer_i = dis.str().length(); buffer_i < 3; buffer_i++)
             {
                 buffer << "0";
             }

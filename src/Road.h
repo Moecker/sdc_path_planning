@@ -21,7 +21,7 @@ class Road
 
     int ego_key = -1;
 
-    int num_lanes;
+    size_t num_lanes;
 
     vector<int> lane_speeds;
 

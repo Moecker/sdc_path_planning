@@ -25,7 +25,7 @@ class Vehicle
 
     int lane;
 
-    int s;
+    float s;
 
     float v;
 
