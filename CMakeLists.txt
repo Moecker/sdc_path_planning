@@ -8,6 +8,12 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 add_definitions(-D_USE_MATH_DEFINES -DSSL_MODE_RELEASE_BUFFERS)
 
+# @todo Check whether we need these
+find_package(ZLIB)
+find_package(libuv)
+find_package(ssl)
+find_package(uWS)
+
 set(sources 
   src/KeepLanePathPlanner.h
   src/KeepLanePathPlanner.cpp
@@ -24,6 +30,12 @@ set(sources
   src/OtherCar.h
   src/WebSocketMessageHandler.h
   src/WebSocketMessageHandler.cpp
+  src/Vehicle.h
+  src/Vehicle.cpp
+  src/Cost.h
+  src/Cost.cpp
+  src/Road.h
+  src/Road.cpp
   src/main.cpp
 )
 
