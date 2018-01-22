@@ -1,8 +1,8 @@
 struct Base
 {
-    virtual void reimplementMe(int a) {}
+    virtual void ReimplementMe(int a) {}
 };
 struct Derived : public Base
 {
-    void reimplementMe(int a) override {}
+    void ReimplementMe(int a) override {}
 };

@@ -1,0 +1,1 @@
+clang-tidy -fix-errors -header-filter='.*' -checks='-*,readability-*,modernize-*' <list_of_files> -fix -- -std=c++11
