@@ -36,6 +36,7 @@ set(sources
   src/Cost.cpp
   src/Road.h
   src/Road.cpp
+  src/Playground.cpp
   src/main.cpp
 )
 

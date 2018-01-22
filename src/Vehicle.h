@@ -15,7 +15,6 @@ class Vehicle
 
     struct collider
     {
-
         bool collision;  // is there a collision?
         int time;        // time collision happens
     };

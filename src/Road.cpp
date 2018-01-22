@@ -35,7 +35,6 @@ void Road::populate_traffic()
         bool vehicle_just_added = false;
         for (int s = start_s; s < start_s + this->update_width; s++)
         {
-
             if (vehicle_just_added)
             {
                 vehicle_just_added = false;
