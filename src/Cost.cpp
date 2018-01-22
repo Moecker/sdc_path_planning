@@ -1,9 +1,9 @@
-#include "cost.h"
+#include "Cost.h"
 #include <math.h>
 #include <functional>
 #include <iterator>
 #include <map>
-#include "vehicle.h"
+#include "Vehicle.h"
 
 const float REACH_GOAL = pow(10, 6);
 const float EFFICIENCY = pow(10, 5);

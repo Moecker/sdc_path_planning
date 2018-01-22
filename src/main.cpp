@@ -56,8 +56,8 @@ int main(int argc, char* argv[])
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include "road.h"
-#include "vehicle.h"
+#include "Road.h"
+#include "Vehicle.h"
 
 void RunBehaviorPlanner()
 {

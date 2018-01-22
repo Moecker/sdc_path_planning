@@ -1,11 +1,11 @@
-#include "road.h"
+#include "Road.h"
 #include <math.h>
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <map>
 #include <string>
-#include "vehicle.h"
+#include "Vehicle.h"
 
 /**
  * Initializes Road

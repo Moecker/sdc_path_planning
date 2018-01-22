@@ -1,11 +1,11 @@
-#include "vehicle.h"
+#include "Vehicle.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <iterator>
 #include <map>
 #include <string>
-#include "cost.h"
+#include "Cost.h"
 
 /**
  * Initializes Vehicle
@@ -15,7 +15,6 @@ Vehicle::Vehicle() {}
 
 Vehicle::Vehicle(int lane, float s, float v, float a, string state)
 {
-
     this->lane = lane;
     this->s = s;
     this->v = v;

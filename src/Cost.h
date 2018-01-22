@@ -1,6 +1,7 @@
 #ifndef COST_H
 #define COST_H
-#include "vehicle.h"
+
+#include "Vehicle.h"
 
 using namespace std;
 
