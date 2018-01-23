@@ -107,11 +107,10 @@ SimpleSplineBasedPlanner::AnchorPoints SimpleSplineBasedPlanner::GenerateAnchorP
         anchors.push_back(reference_point);
     }
 
-    double distance_at{0.0};
-    const double kSplineInterpolationDistanceFactor = 30.0;
-    for (auto& i : {distance_at = kSplineInterpolationDistanceFactor,
-                   distance_at = 2 * kSplineInterpolationDistanceFactor,
-                   distance_at = 3 * kSplineInterpolationDistanceFactor})
+    const double kSplineInterpolationDistanceFactor = 50.0;
+    for (auto& i : {1.0 * kSplineInterpolationDistanceFactor,
+                    2.0 * kSplineInterpolationDistanceFactor,
+                    3.0 * kSplineInterpolationDistanceFactor})
     {
         anchors.push_back(
             map_.FrenetToCartesian({input.frenet_location.s + i, FrenetPoint::LaneCenterDCoord(target_lane_)}));
