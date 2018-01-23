@@ -15,32 +15,6 @@ class Vehicle
     Vehicle(int lane, double s, double v, double a, string state = "CS");
     virtual ~Vehicle();
 
-    map<string, int> lane_direction = {{"PLCL", 1}, {"LCL", 1}, {"LCR", -1}, {"PLCR", -1}};
-
-    struct collider
-    {
-        bool collision;  // is there a collision?
-        int time;        // time collision happens
-    };
-
-    int L = 1;
-    int preferred_buffer = 6;  // impacts "keep lane" behavior.
-
-    int lane;
-
-    double s;
-    double v;
-    double a;
-
-    double target_speed;
-    int lanes_available;
-    double max_acceleration;
-
-    int goal_lane;
-    double goal_s;
-
-    string state;
-
     vector<Vehicle> choose_next_state(map<int, vector<Vehicle>> predictions);
     vector<string> successor_states();
     vector<Vehicle> generate_trajectory(string state, map<int, vector<Vehicle>> predictions);
@@ -59,6 +33,25 @@ class Vehicle
     vector<Vehicle> generate_predictions(int horizon = 2);
     void realize_next_state(vector<Vehicle> trajectory);
     void configure(vector<int> road_data);
+
+    map<string, int> lane_direction = {{"PLCL", 1}, {"LCL", 1}, {"LCR", -1}, {"PLCR", -1}};
+
+    int preferred_buffer = 6;  // impacts "keep lane" behavior.
+
+    int lane;
+    double s;
+    double v;
+
+    double a;
+    double target_speed;
+    int lanes_available;
+
+    double max_acceleration;
+    int goal_lane;
+
+    double goal_s;
+
+    string state;
 };
 
 #endif

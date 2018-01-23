@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "Vehicle.h"
 
 using namespace std;
@@ -15,28 +16,27 @@ using namespace std;
 class Road
 {
   public:
-    double update_width = 70.0;
-    string ego_rep = " *** ";
-    int ego_key = -1;
-    size_t num_lanes;
+    double kUpdateWidth = 70.0;
 
-    vector<int> lane_speeds;
-    int speed_limit;
-    double density;
-    double camera_center;
-
-    map<int, Vehicle> vehicles;
-    int vehicles_added = 0;
-
-    Road(int speed_limit, double traffic_density, vector<int> lane_speeds);
+    Road(double traffic_density, vector<int> lane_speeds);
     virtual ~Road();
 
     Vehicle get_ego();
-
     void populate_traffic();
     void advance();
     void display(int timestep);
+
     void add_ego(int lane_num, int s, vector<int> config_data);
 
-    void cull();
+  private:
+    string ego_rep_ = " *** ";
+    int ego_key_ = -1;
+    size_t num_lanes_;
+
+    vector<int> lane_speeds_;
+    double density_;
+    double camera_center_;
+
+    map<int, Vehicle> vehicles_;
+    int vehicles_added_ = 0;
 };

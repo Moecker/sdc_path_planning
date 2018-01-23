@@ -32,7 +32,7 @@ echo " " >>  $WHAT.gnuplot
 gnuplot -persist < $WHAT.gnuplot
 
 # generate a png file
-# convert -background white -density 120 -rotate 90 -resize 800 +dither -colors 256 -quality 0 $WHAT.ps -background white -flatten  .$WHAT.png
+# convert -background white -density_ 120 -rotate 90 -resize 800 +dither -colors 256 -quality 0 $WHAT.ps -background white -flatten  .$WHAT.png
 
 # clean
 rm $WHAT.out.header $WHAT.gnuplot

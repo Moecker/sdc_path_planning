@@ -19,8 +19,12 @@ using std::string;
 
 const int kStartingLane = 1;
 
+void RunBehaviorPlanner();
+
 int main(int argc, char* argv[])
 {
+    RunBehaviorPlanner();
+
     uWS::Hub h;
     HighwayMap map("../data/highway_map.csv");
 
@@ -52,12 +56,7 @@ int main(int argc, char* argv[])
     h.run();
 }
 
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <vector>
 #include "Road.h"
-#include "Vehicle.h"
 
 void RunBehaviorPlanner()
 {
@@ -73,28 +72,24 @@ void RunBehaviorPlanner()
     double TRAFFIC_DENSITY = 0.15;
 
     // At each timestep, ego can set acceleration to value between
-    // -MAX_ACCEL and MAX_ACCEL
     int MAX_ACCEL = 2;
 
     // s value and lane number of goal.
     vector<int> GOAL = {300, 0};
 
     // These affect the visualization
-    int FRAMES_PER_SECOND = 4;
     int AMOUNT_OF_ROAD_VISIBLE = 40;
 
-    Road road = Road(SPEED_LIMIT, TRAFFIC_DENSITY, LANE_SPEEDS);
+    Road road = Road(TRAFFIC_DENSITY, LANE_SPEEDS);
 
-    road.update_width = AMOUNT_OF_ROAD_VISIBLE;
+    road.kUpdateWidth = AMOUNT_OF_ROAD_VISIBLE;
 
     road.populate_traffic();
 
     int goal_s = GOAL[0];
     int goal_lane = GOAL[1];
 
-    // configuration data: speed limit, num_lanes, goal_s, goal_lane, max_acceleration
-
-    int num_lanes = LANE_SPEEDS.size();
+    int num_lanes = static_cast<int>(LANE_SPEEDS.size());
     vector<int> ego_config = {SPEED_LIMIT, num_lanes, goal_s, goal_lane, MAX_ACCEL};
 
     road.add_ego(2, 0, ego_config);
@@ -109,7 +104,6 @@ void RunBehaviorPlanner()
         }
         road.advance();
         road.display(timestep);
-        // time.sleep(float(1.0) / FRAMES_PER_SECOND);
     }
     Vehicle ego = road.get_ego();
     if (ego.lane == GOAL[1])

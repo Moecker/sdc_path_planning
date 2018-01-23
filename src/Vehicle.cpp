@@ -49,7 +49,7 @@ vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions
         vector<Vehicle> trajectory = generate_trajectory(*it, predictions);
         if (trajectory.size() != 0)
         {
-            cost = calculate_cost(*this, predictions, trajectory);
+            cost = CalculateCost(*this, predictions, trajectory);
             costs.push_back(cost);
             final_trajectories.push_back(trajectory);
         }
@@ -307,7 +307,7 @@ bool Vehicle::get_vehicle_ahead(map<int, vector<Vehicle>> predictions, int lane,
 vector<Vehicle> Vehicle::generate_predictions(int horizon)
 {
     /*
-    Generates predictions for non-ego vehicles to be used
+    Generates predictions for non-ego vehicles_ to be used
     in trajectory generation for the ego vehicle.
     */
     vector<Vehicle> predictions;

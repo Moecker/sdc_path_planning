@@ -1,19 +1,12 @@
 #include "Road.h"
-#include <math.h>
 #include <algorithm>
-#include <iostream>
-#include <iterator>
-#include <map>
-#include <string>
-#include "Vehicle.h"
 
-Road::Road(int speed_limit, double traffic_density, vector<int> lane_speeds)
+Road::Road(double traffic_density, vector<int> lane_speeds)
 {
-    this->num_lanes = lane_speeds.size();
-    this->lane_speeds = lane_speeds;
-    this->speed_limit = speed_limit;
-    this->density = traffic_density;
-    this->camera_center = this->update_width / 2.0;
+    this->num_lanes_ = lane_speeds.size();
+    this->lane_speeds_ = lane_speeds;
+    this->density_ = traffic_density;
+    this->camera_center_ = this->kUpdateWidth / 2.0;
 }
 
 Road::~Road()
@@ -22,29 +15,29 @@ Road::~Road()
 
 Vehicle Road::get_ego()
 {
-    return this->vehicles.find(this->ego_key)->second;
+    return this->vehicles_.find(this->ego_key_)->second;
 }
 
 void Road::populate_traffic()
 {
-    double start_s = std::max(this->camera_center - (this->update_width / 2.0), 0.0);
-    for (int l = 0; l < this->num_lanes; l++)
+    double start_s = std::max(this->camera_center_ - (this->kUpdateWidth / 2.0), 0.0);
+    for (int l = 0; l < this->num_lanes_; l++)
     {
-        int lane_speed = this->lane_speeds[l];
+        int lane_speed = this->lane_speeds_[l];
         bool vehicle_just_added = false;
-        for (double s = start_s; s < start_s + this->update_width; s++)
+        for (double s = start_s; s < start_s + this->kUpdateWidth; s++)
         {
             if (vehicle_just_added)
             {
                 vehicle_just_added = false;
             }
-            if (((double)rand() / (RAND_MAX)) < this->density)
+            if (((double)rand() / (RAND_MAX)) < this->density_)
             {
 
                 Vehicle vehicle = Vehicle(l, s, lane_speed, 0);
                 vehicle.state = "CS";
-                this->vehicles_added += 1;
-                this->vehicles.insert(std::pair<int, Vehicle>(vehicles_added, vehicle));
+                this->vehicles_added_ += 1;
+                this->vehicles_.insert(std::pair<int, Vehicle>(vehicles_added_, vehicle));
                 vehicle_just_added = true;
             }
         }
@@ -55,19 +48,19 @@ void Road::advance()
 {
     map<int, vector<Vehicle> > predictions;
 
-    map<int, Vehicle>::iterator it = this->vehicles.begin();
-    while (it != this->vehicles.end())
+    map<int, Vehicle>::iterator it = this->vehicles_.begin();
+    while (it != this->vehicles_.end())
     {
         int v_id = it->first;
         vector<Vehicle> preds = it->second.generate_predictions();
         predictions[v_id] = preds;
         it++;
     }
-    it = this->vehicles.begin();
-    while (it != this->vehicles.end())
+    it = this->vehicles_.begin();
+    while (it != this->vehicles_.end())
     {
         int v_id = it->first;
-        if (v_id == ego_key)
+        if (v_id == ego_key_)
         {
             vector<Vehicle> trajectory = it->second.choose_next_state(predictions);
             it->second.realize_next_state(trajectory);
@@ -82,47 +75,47 @@ void Road::advance()
 
 void Road::add_ego(int lane_num, int s, vector<int> config_data)
 {
-    map<int, Vehicle>::iterator it = this->vehicles.begin();
-    while (it != this->vehicles.end())
+    map<int, Vehicle>::iterator it = this->vehicles_.begin();
+    while (it != this->vehicles_.end())
     {
         int v_id = it->first;
         Vehicle v = it->second;
         if (v.lane == lane_num && v.s == s)
         {
-            this->vehicles.erase(v_id);
+            this->vehicles_.erase(v_id);
         }
         it++;
     }
-    Vehicle ego = Vehicle(lane_num, s, this->lane_speeds[lane_num], 0);
+    Vehicle ego = Vehicle(lane_num, s, this->lane_speeds_[lane_num], 0);
     ego.configure(config_data);
     ego.state = "KL";
-    this->vehicles.insert(std::pair<int, Vehicle>(ego_key, ego));
+    this->vehicles_.insert(std::pair<int, Vehicle>(ego_key_, ego));
 }
 
 void Road::display(int timestep)
 {
-    Vehicle ego = this->vehicles.find(this->ego_key)->second;
+    Vehicle ego = this->vehicles_.find(this->ego_key_)->second;
     double s = ego.s;
     string state = ego.state;
 
-    this->camera_center = std::max(s, this->update_width / 2.0);
-    double s_min = std::max(this->camera_center - this->update_width / 2.0, 0.0);
-    double s_max = s_min + this->update_width;
+    this->camera_center_ = std::max(s, this->kUpdateWidth / 2.0);
+    double s_min = std::max(this->camera_center_ - this->kUpdateWidth / 2.0, 0.0);
+    double s_max = s_min + this->kUpdateWidth;
 
     vector<vector<string> > road;
 
-    for (int i = 0; i < this->update_width; i++)
+    for (int i = 0; i < this->kUpdateWidth; i++)
     {
         vector<string> road_lane;
-        for (int ln = 0; ln < this->num_lanes; ln++)
+        for (int ln = 0; ln < this->num_lanes_; ln++)
         {
             road_lane.push_back("     ");
         }
         road.push_back(road_lane);
     }
 
-    map<int, Vehicle>::iterator it = this->vehicles.begin();
-    while (it != this->vehicles.end())
+    map<int, Vehicle>::iterator it = this->vehicles_.begin();
+    while (it != this->vehicles_.end())
     {
 
         int v_id = it->first;
@@ -131,9 +124,9 @@ void Road::display(int timestep)
         if (s_min <= v.s && v.s < s_max)
         {
             string marker = "";
-            if (v_id == this->ego_key)
+            if (v_id == this->ego_key_)
             {
-                marker = this->ego_rep;
+                marker = this->ego_rep_;
             }
             else
             {

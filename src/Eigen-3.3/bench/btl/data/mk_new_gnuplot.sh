@@ -49,6 +49,6 @@ gnuplot -persist < $WHAT.gnuplot
 rm $WHAT.gnuplot
 
 ps2pdf ../${DIR}/$WHAT.ps ../${DIR}/$WHAT.pdf
-convert -background white -density 120 -rotate 90 -resize 800 +dither -colors 256 -quality 0 ../${DIR}/$WHAT.ps -background white -flatten  ../${DIR}/$WHAT.png
+convert -background white -density_ 120 -rotate 90 -resize 800 +dither -colors 256 -quality 0 ../${DIR}/$WHAT.ps -background white -flatten  ../${DIR}/$WHAT.png
 
 # pstoedit -rotate -90 -xscale 0.8 -yscale 0.8 -centered -yshift -50 -xshift -100  -f plot-svg aat.ps  aat2.svg

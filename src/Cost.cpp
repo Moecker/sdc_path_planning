@@ -1,17 +1,14 @@
-#include "Cost.h"
-#include <math.h>
 #include <functional>
-#include <iterator>
-#include <map>
-#include "Vehicle.h"
 
-const double REACH_GOAL = pow(10, 6);
-const double EFFICIENCY = pow(10, 5);
+#include "Cost.h"
 
-double goal_distance_cost(const Vehicle& vehicle,
-                          const vector<Vehicle>& trajectory,
-                          const map<int, vector<Vehicle>>& predictions,
-                          map<string, int>& data)
+const double kReachGoal = pow(10, 6);
+const double kEfficiency = pow(10, 5);
+
+double GoalDistanceCost(const Vehicle& vehicle,
+                        const vector<Vehicle>& trajectory,
+                        const map<int, vector<Vehicle>>& predictions,
+                        map<string, int>& data)
 {
     /*
     Cost increases based on distance of intended lane (for planning a lane change) and final lane of trajectory.
@@ -30,23 +27,23 @@ double goal_distance_cost(const Vehicle& vehicle,
     return cost;
 }
 
-double inefficiency_cost(const Vehicle& vehicle,
-                         const vector<Vehicle>& trajectory,
-                         const map<int, vector<Vehicle>>& predictions,
-                         map<string, int>& data)
+double InefficiencyCost(const Vehicle& vehicle,
+                        const vector<Vehicle>& trajectory,
+                        const map<int, vector<Vehicle>>& predictions,
+                        map<string, int>& data)
 {
     /*
     Cost becomes higher for trajectories with intended lane and final lane that have traffic slower than vehicle's
     target speed.
     */
 
-    double proposed_speed_intended = lane_speed(predictions, data["intended_lane"]);
+    double proposed_speed_intended = GetLaneSpeed(predictions, data["intended_lane"]);
     if (proposed_speed_intended < 0)
     {
         proposed_speed_intended = vehicle.target_speed;
     }
 
-    double proposed_speed_final = lane_speed(predictions, data["final_lane"]);
+    double proposed_speed_final = GetLaneSpeed(predictions, data["final_lane"]);
     if (proposed_speed_final < 0)
     {
         proposed_speed_final = vehicle.target_speed;
@@ -57,10 +54,10 @@ double inefficiency_cost(const Vehicle& vehicle,
     return cost;
 }
 
-double lane_speed(const map<int, vector<Vehicle>>& predictions, int lane)
+double GetLaneSpeed(const map<int, vector<Vehicle>>& predictions, int lane)
 {
     /*
-    All non ego vehicles in a lane have the same speed, so to get the speed limit for a lane,
+    All non ego vehicles_ in a lane have the same speed, so to get the speed limit for a lane,
     we can just find one vehicle in that lane.
     */
     for (map<int, vector<Vehicle>>::const_iterator it = predictions.begin(); it != predictions.end(); ++it)
@@ -76,21 +73,21 @@ double lane_speed(const map<int, vector<Vehicle>>& predictions, int lane)
     return -1.0;
 }
 
-double calculate_cost(const Vehicle& vehicle,
-                      const map<int, vector<Vehicle>>& predictions,
-                      const vector<Vehicle>& trajectory)
+double CalculateCost(const Vehicle& vehicle,
+                     const map<int, vector<Vehicle>>& predictions,
+                     const vector<Vehicle>& trajectory)
 {
     /*
     Sum weighted cost functions to get total cost for trajectory.
     */
-    map<string, int> trajectory_data = get_helper_data(vehicle, trajectory, predictions);
+    map<string, int> trajectory_data = GetTrajectoryMetaData(vehicle, trajectory, predictions);
     double cost = 0.0;
 
     // Add additional cost functions here.
     vector<
         function<double(const Vehicle&, const vector<Vehicle>&, const map<int, vector<Vehicle>>&, map<string, int>&)>>
-        cf_list = {goal_distance_cost, inefficiency_cost};
-    vector<double> weight_list = {REACH_GOAL, EFFICIENCY};
+        cf_list = {GoalDistanceCost, InefficiencyCost};
+    vector<double> weight_list = {kReachGoal, kEfficiency};
 
     for (int i = 0; i < cf_list.size(); i++)
     {
@@ -101,9 +98,9 @@ double calculate_cost(const Vehicle& vehicle,
     return cost;
 }
 
-map<string, int> get_helper_data(const Vehicle& vehicle,
-                                 const vector<Vehicle>& trajectory,
-                                 const map<int, vector<Vehicle>>& predictions)
+map<string, int> GetTrajectoryMetaData(const Vehicle& vehicle,
+                                       const vector<Vehicle>& trajectory,
+                                       const map<int, vector<Vehicle>>& predictions)
 {
     /*
     Generate helper data to use in cost functions:

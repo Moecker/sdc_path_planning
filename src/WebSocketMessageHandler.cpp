@@ -64,7 +64,6 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
     for (auto& other_car_data : sensor_fusion_data)
     {
         OtherCar other_car;
-        other_car.cartesian_location = {other_car_data[1], other_car_data[2]};
         other_car.x_axis_speed = other_car_data[3];
         other_car.y_axis_speed = other_car_data[4];
         other_car.frenet_location = {other_car_data[5], other_car_data[6]};
