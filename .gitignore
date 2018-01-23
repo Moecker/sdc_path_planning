@@ -6,3 +6,5 @@ build/
 /src/libuv
 /src/openssl
 /src/zlib-1.2.11
+/.idea
+/cmake-build-debug
