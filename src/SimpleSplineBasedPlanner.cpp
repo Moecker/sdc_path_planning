@@ -2,9 +2,9 @@
 /// @file
 ///
 
+#include <cmath>
 #include <iostream>
 #include <vector>
-#include <cmath>
 
 #include "SimpleSplineBasedPlanner.h"
 
@@ -31,8 +31,7 @@ std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerIn
     DecideDrivingPolicyForSpeedAndLane(input);
 
     auto anchors_cartesian = GenerateAnchorPoints(input);
-    auto anchors_local =
-        ConvertPointsToLocalSystem(anchors_cartesian.anchor_points, anchors_cartesian.reference_point);
+    auto anchors_local = ConvertPointsToLocalSystem(anchors_cartesian.anchor_points, anchors_cartesian.reference_point);
 
     auto spline = MakeSplineFromAnchorPoints(anchors_local);
     auto new_path_points = GenerateNewPointsWithSpline(spline, static_cast<int>(input.previous_path.size()));
@@ -63,15 +62,15 @@ void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInp
 
 bool SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& input) const
 {
-    double ego_predicted_end_point_s = !input.previous_path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
+    double ego_predicted_end_point_s =
+        !input.previous_path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
 
     for (auto& other_car : input.other_cars)
     {
         if (other_car.IsInLane(target_lane_))
         {
-            auto predicted_increase_of_s_wrt_our_car = 
-                input.previous_path.size() * kSimulatorRunloopPeriod *
-                other_car.Speed2DMagnitude() * 0.447;
+            auto predicted_increase_of_s_wrt_our_car =
+                input.previous_path.size() * kSimulatorRunloopPeriod * other_car.Speed2DMagnitude() * 0.447;
 
             double other_car_predicted_s = other_car.frenet_location.s + predicted_increase_of_s_wrt_our_car;
             if (other_car_predicted_s > ego_predicted_end_point_s &&
@@ -111,8 +110,8 @@ SimpleSplineBasedPlanner::AnchorPoints SimpleSplineBasedPlanner::GenerateAnchorP
     double distance_at{0.0};
     const double kSplineInterpolationDistanceFactor = 30.0;
     for (auto& i : {distance_at = kSplineInterpolationDistanceFactor,
-        distance_at = 2 * kSplineInterpolationDistanceFactor,
-        distance_at = 3 * kSplineInterpolationDistanceFactor})
+                   distance_at = 2 * kSplineInterpolationDistanceFactor,
+                   distance_at = 3 * kSplineInterpolationDistanceFactor})
     {
         anchors.push_back(
             map_.FrenetToCartesian({input.frenet_location.s + i, FrenetPoint::LaneCenterDCoord(target_lane_)}));

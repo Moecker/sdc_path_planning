@@ -2,11 +2,11 @@
 /// @file
 ///
 
-#include "uWS/uWS.h"
 #include <fstream>
 #include <thread>
 #include "Eigen-3.3/Eigen/Core"
 #include "json.hpp"
+#include "uWS/uWS.h"
 
 #include "KeepLanePathPlanner.h"
 #include "SimpleSplineBasedPlanner.h"

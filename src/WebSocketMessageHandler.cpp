@@ -57,9 +57,8 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
     for (int i = 0; i < path_planner_input.previous_path_x.size(); i++)
     {
         path_planner_input.previous_path.emplace_back(path_planner_input.previous_path_x[i],
-                                             path_planner_input.previous_path_y[i]);
+                                                      path_planner_input.previous_path_y[i]);
     }
-
 
     auto sensor_fusion_data = data["sensor_fusion"].get<std::vector<std::vector<double>>>();
     for (auto& other_car_data : sensor_fusion_data)

@@ -7,7 +7,9 @@
 #include <string>
 #include "Cost.h"
 
-Vehicle::Vehicle() {}
+Vehicle::Vehicle()
+{
+}
 
 Vehicle::Vehicle(int lane, double s, double v, double a, string state)
 {
@@ -19,7 +21,9 @@ Vehicle::Vehicle(int lane, double s, double v, double a, string state)
     max_acceleration = -1;
 }
 
-Vehicle::~Vehicle() {}
+Vehicle::~Vehicle()
+{
+}
 
 vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions)
 {

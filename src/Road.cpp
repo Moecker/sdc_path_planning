@@ -16,7 +16,9 @@ Road::Road(int speed_limit, double traffic_density, vector<int> lane_speeds)
     this->camera_center = this->update_width / 2.0;
 }
 
-Road::~Road() {}
+Road::~Road()
+{
+}
 
 Vehicle Road::get_ego()
 {
