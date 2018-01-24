@@ -31,8 +31,9 @@ class SimpleSplineBasedPlanner : public PathPlanner
 
     void DecideDrivingPolicyForSpeedAndLane(PathPlannerInput input);
     void PrepareLaneChange();
+    void ObeyRightLaneDrivingPolicy();
 
-    bool IsTooCloseToOtherCar(const PathPlannerInput& input) const;
+    std::pair<bool, double> IsTooCloseToOtherCar(const PathPlannerInput& input) const;
 
     std::vector<CartesianPoint> ConvertPointsToLocalSystem(const std::vector<CartesianPoint>& new_path_anchor_points,
                                                            const CartesianPoint& local_reference_point) const;
@@ -45,7 +46,6 @@ class SimpleSplineBasedPlanner : public PathPlanner
     AnchorPoints GenerateAnchorPoints(const PathPlannerInput& input) const;
 
     double target_speed_;
-    void ObeyRightLaneDrivingPolicy();
 };
 
 #endif  // PATH_PLANNING_SIMPLESPLINEBASEDPLANNER_H

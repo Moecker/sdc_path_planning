@@ -21,6 +21,11 @@ class HighwayMap
     int NextWaypoint(CartesianPoint current_vehicle_location) const;
     int ClosestWaypoint(CartesianPoint current_vehicle_location) const;
 
+    static double EuclidDistance(CartesianPoint p1, CartesianPoint p2)
+    {
+        return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
+    }
+
   private:
     std::vector<double> map_points_x_;
     std::vector<double> map_points_y_;
@@ -29,10 +34,6 @@ class HighwayMap
     std::vector<double> map_points_dy_;
 
     void ReadMapFromCsvFile(const std::string& highway_map_csv_path);
-    inline double EuclidDistance(CartesianPoint p1, CartesianPoint p2) const
-    {
-        return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
-    }
 };
 
 #endif  // PATH_PLANNING_HIGHWAYMAP_H

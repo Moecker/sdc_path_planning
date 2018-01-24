@@ -37,6 +37,8 @@ set(sources
   src/Road.h
   src/Road.cpp
   src/Playground.cpp
+  src/LaneChangePlanner.h
+  src/LaneChangePlanner.cpp
   src/main.cpp
 )
 
