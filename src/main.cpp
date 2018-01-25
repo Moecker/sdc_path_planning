@@ -20,10 +20,12 @@ using std::string;
 const int kStartingLane = 1;
 
 void RunBehaviorPlanner();
+void StateMachineTest();
 
 int main(int argc, char* argv[])
 {
     RunBehaviorPlanner();
+    StateMachineTest();
 
     uWS::Hub h;
     HighwayMap map("../data/highway_map.csv");
@@ -118,4 +120,16 @@ void RunBehaviorPlanner()
     {
         cout << "You missed the goal. You are in lane " << ego.lane << " instead of " << GOAL[1] << "." << endl;
     }
+}
+
+#include <fsmlist.hpp>
+
+void StateMachineTest()
+{
+    MotorDown motor_down;
+    MotorUp motor_up;
+
+    send_event(motor_down);
+    send_event(motor_up);
+    send_event(motor_down);
 }

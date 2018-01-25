@@ -15,30 +15,16 @@ add_definitions(-D_USE_MATH_DEFINES -DSSL_MODE_RELEASE_BUFFERS)
 # find_package(uWS)
 
 set(sources 
-  src/KeepLanePathPlanner.h
   src/KeepLanePathPlanner.cpp
-  src/OutputPath.h
-  src/PathPlannerInput.h
-  src/CartesianPoint.h
-  src/HighwayMap.h
   src/HighwayMap.cpp
-  src/FrenetPoint.h
-  src/PathPlanner.h
-  src/SimpleSplineBasedPlanner.h
   src/SimpleSplineBasedPlanner.cpp
-  src/spline.h
-  src/OtherCar.h
-  src/WebSocketMessageHandler.h
   src/WebSocketMessageHandler.cpp
-  src/Vehicle.h
   src/Vehicle.cpp
-  src/Cost.h
   src/Cost.cpp
-  src/Road.h
   src/Road.cpp
   src/Playground.cpp
-  src/LaneChangePlanner.h
   src/LaneChangePlanner.cpp
+  src/DrivingStateMachine.cpp
   src/main.cpp
 )
 
@@ -58,5 +44,5 @@ if(WIN32)
 endif()
 
 add_executable(path-planning ${sources})
-
+target_include_directories(path-planning PRIVATE src)
 target_link_libraries(path-planning z ssl uv uWS)
