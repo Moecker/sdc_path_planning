@@ -7,18 +7,17 @@
 using std::cout;
 using std::endl;
 
-void ChangeLaneCheck(int current_Lane,
-                     double our_speed,
-                     vector<vector<vector<double>>>& lane_lines,
-                     vector<vector<int>>& close_cars,
-                     vector<int>& lane_ranks)
+std::pair<bool, int> ChangeLaneCheck(int current_Lane,
+                                     double our_speed,
+                                     vector<vector<vector<double>>>& lane_lines,
+                                     vector<vector<int>>& close_cars,
+                                     vector<int>& lane_ranks)
 {
     // @todo Check these variable
     double distance_increment{0.0};
     int lane_change_votes{0};
-    double velocity_action{0.0};
     bool lane_change{false};
-    double next_d_val{0.0};
+    int next_d_val{0};
 
     // This will be the number of our destination lane
     int destination_Lane = current_Lane;
@@ -123,71 +122,7 @@ void ChangeLaneCheck(int current_Lane,
     // Update d value
     next_d_val = (destination_Lane * 4) + 2;
 
-    // Update s value
-    int car_id = close_cars[destination_Lane][1];
-
-    // Full speed, because there is no car ahead
-    if (car_id == -1)
-    {
-        distance_increment = 0.44;
-        if (velocity_action != 0)
-            cout << "Nothing in front, full speed.." << endl;
-        velocity_action = 0;
-    }
-
-    // There is someone in front
-    else
-    {
-        // Calculate distance and velocity of other car
-        double distance = lane_lines[destination_Lane][car_id][8];
-        double velocity = lane_lines[destination_Lane][car_id][7];
-
-        // Distance is big enough, full speed
-        if (distance > 40.0)
-        {
-            distance_increment = 0.44;
-            if (velocity_action != 1)
-                cout << "Cars far away, full speed.." << endl;
-            velocity_action = 1;
-        }
-
-        // Try adapt to the speed of the car in front
-        if ((distance <= 40.0) && (distance > 15.0))
-        {
-            if (distance_increment > velocity)
-                distance_increment *= 0.7;
-            else if (distance > 25.0)
-                distance_increment = velocity + 0.02;
-            else
-                distance_increment = velocity - 0.02;
-            if (velocity_action != 2)
-                cout << "Adapt to front vehicle.." << endl;
-            velocity_action = 2;
-        }
-
-        // If distance is too low, do brake stronger
-        if ((distance <= 15.0) && (distance > 10.0))
-        {
-            distance_increment *= 0.7;
-            if (velocity_action != 3)
-                cout << "Slowing down faster.." << endl;
-            velocity_action = 3;
-        }
-        if ((distance <= 10.0) && (distance > 5.0))
-        {
-            distance_increment *= 0.5;
-            if (velocity_action != 4)
-                cout << "Braking hard.." << endl;
-            velocity_action = 4;
-        }
-        if (distance <= 5.0)
-        {
-            distance_increment *= 0.3;
-            if (velocity_action != 5)
-                cout << "Emergency brake.." << endl;
-            velocity_action = 5;
-        }
-    }
+    return std::make_pair(lane_change, next_d_val);
 }
 
 // Identify the closest car ahead and behind of our car
@@ -273,7 +208,7 @@ void LaneRanking(int current_Lane,
 }
 
 // This is the behavior planner
-void BehaviorPlanner(int current_lane, PathPlannerInput input)
+int PlanBehavior(int current_lane, PathPlannerInput input)
 {
     // Store information about our three lane lines
     vector<vector<vector<double>>> lane_lines(3);
@@ -282,24 +217,21 @@ void BehaviorPlanner(int current_lane, PathPlannerInput input)
     for (int i = 0; i < input.other_cars.size(); i++)
     {
         // Get vehicle object from sensor fusion
-        // @todo
-        // Get this right vector<double> vehicle = sensor_fusion[i];
-
-        vector<double> vehicle;
+        auto vehicle = input.other_cars[i];
         vector<vector<double>> sensor_fusion;
         input.other_cars[0].frenet_location.s;
 
         // Add distance increment (velocity) of the car
-        sensor_fusion[i].push_back(
-            HighwayMap::EuclidDistance(CartesianPoint(0.0, 0.0), CartesianPoint(vehicle[3], vehicle[4] * 0.02)));
+        sensor_fusion[i].push_back(HighwayMap::EuclidDistance(
+            CartesianPoint(0.0, 0.0), CartesianPoint(vehicle.x_axis_speed, vehicle.y_axis_speed * 0.02)));
 
         // Add displacement from other car to our car
-        sensor_fusion[i].push_back(vehicle[5] - input.frenet_location.s);
+        sensor_fusion[i].push_back(vehicle.frenet_location.s - input.frenet_location.s);
 
-        // Add cars to the coreesponding lane
+        // Add cars to the coresponding lane
         for (int j = 0; j < 3; j++)
         {
-            if ((vehicle[6] >= ((j * 4) - 0.3)) && (vehicle[6] <= (((j + 1) * 4) + 0.3)))
+            if ((vehicle.frenet_location.d >= ((j * 4) - 0.3)) && (vehicle.frenet_location.d <= (((j + 1) * 4) + 0.3)))
                 lane_lines[j].push_back(sensor_fusion[i]);
         }
     }
@@ -318,5 +250,7 @@ void BehaviorPlanner(int current_lane, PathPlannerInput input)
     LaneRanking(current_lane, lane_lines, close_cars, lane_ranks);
 
     // If there is a better lane, change to it
-    ChangeLaneCheck(current_lane, input.speed, lane_lines, close_cars, lane_ranks);
+    auto is_lane_change_and_target_lane =
+        ChangeLaneCheck(current_lane, input.speed, lane_lines, close_cars, lane_ranks);
+    return is_lane_change_and_target_lane.second;
 }

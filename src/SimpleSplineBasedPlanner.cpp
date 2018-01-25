@@ -68,21 +68,19 @@ void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInp
         // A simple deceleration controler which breaks harder the closer an other vehicle gets
         other_car_speed = MetersPerSecondToMph(other_car_speed);
         auto our_speed = input.speed;
-	      auto speed_difference = other_car_speed - our_speed;
+        auto speed_difference = other_car_speed - our_speed;
 
         auto target_acceleration = (kDistanceForFullBreak / (2 * distance_to_other_car)) * KDefaultAcceleration;
         target_acceleration -= ((0.5 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
         target_acceleration = std::min(target_acceleration, KDefaultAcceleration);
 
-        std::cout << "d_other | a_target | v_ego | v_other | v_diff | "
-           << distance_to_other_car << " | " << target_acceleration << " | "
-           << our_speed << " | " << other_car_speed << " | "
-           << speed_difference << std::endl;
+        std::cout << "d_other | a_target | v_ego | v_other | v_diff | " << distance_to_other_car << " | "
+                  << target_acceleration << " | " << our_speed << " | " << other_car_speed << " | " << speed_difference
+                  << std::endl;
 
         target_speed_ -= target_acceleration;
-        // target_speed_ = std::max(target_speed_, other_car_speed);
 
-        PrepareLaneChange();
+        PrepareLaneChange(input);
     }
     else if (target_speed_ < KMaxSpeed)
     {
@@ -101,7 +99,7 @@ std::tuple<bool, double, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(
         {
             auto other_car_speed = other_car.Speed2DMagnitude();
             auto predicted_increase_of_s_wrt_our_car =
-               input.previous_path.size() * kSimulatorRunloopPeriod * other_car_speed * KDefaultAcceleration;
+                input.previous_path.size() * kSimulatorRunloopPeriod * other_car_speed * KDefaultAcceleration;
 
             double other_car_predicted_s = other_car.frenet_location.s + predicted_increase_of_s_wrt_our_car;
             auto predicted_distance = other_car_predicted_s - ego_predicted_end_point_s;
@@ -157,14 +155,15 @@ SimpleSplineBasedPlanner::AnchorPoints SimpleSplineBasedPlanner::GenerateAnchorP
 
 void SimpleSplineBasedPlanner::ObeyRightLaneDrivingPolicy()
 {
-    /// @todo Check if save to change to right lane
-    target_lane_ = 0;
+    /// @todo Check if save to change to right lane and if we need this at all
+    target_lane_ = target_lane_;
 }
 
-void SimpleSplineBasedPlanner::PrepareLaneChange()
+void SimpleSplineBasedPlanner::PrepareLaneChange(PathPlannerInput input)
 {
-    /// @todo Check if save to change to left lane
     target_lane_ = kLeftmostLaneNumber;
+    auto proposed_target_lane = PlanBehavior(target_lane_, input);
+    std::cout << "Proposed lane to be changed to | " << proposed_target_lane << std::endl;
 }
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::ConvertPointsToLocalSystem(

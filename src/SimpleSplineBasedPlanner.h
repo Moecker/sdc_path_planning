@@ -5,9 +5,11 @@
 #ifndef PATH_PLANNING_SIMPLESPLINEBASEDPLANNER_H
 #define PATH_PLANNING_SIMPLESPLINEBASEDPLANNER_H
 
-#include "PathPlanner.h"
+#include <tuple>
 #include "spline.h"
-#include "tuple"
+
+#include "PathPlanner.h"
+#include "LaneChangePlanner.h"
 
 class SimpleSplineBasedPlanner : public PathPlanner
 {
@@ -20,8 +22,7 @@ class SimpleSplineBasedPlanner : public PathPlanner
   private:
     struct AnchorPoints
     {
-        AnchorPoints(const CartesianPoint& reference_point,
-                     const std::vector<CartesianPoint>& anchor_points)
+        AnchorPoints(const CartesianPoint& reference_point, const std::vector<CartesianPoint>& anchor_points)
                 : reference_point(reference_point), anchor_points(anchor_points)
         {
         }
@@ -31,7 +32,7 @@ class SimpleSplineBasedPlanner : public PathPlanner
     };
 
     void DecideDrivingPolicyForSpeedAndLane(PathPlannerInput input);
-    void PrepareLaneChange();
+    void PrepareLaneChange(PathPlannerInput input);
     void ObeyRightLaneDrivingPolicy();
 
     std::tuple<bool, double, double> IsTooCloseToOtherCar(const PathPlannerInput& input) const;
