@@ -5,6 +5,8 @@
 #ifndef PATH_PLANNING_CARTESIANPOINT_H
 #define PATH_PLANNING_CARTESIANPOINT_H
 
+#include <cmath>
+
 struct CartesianPoint
 {
     CartesianPoint() = default;

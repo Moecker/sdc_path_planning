@@ -7,6 +7,7 @@
 
 #include "PathPlanner.h"
 #include "spline.h"
+#include "tuple"
 
 class SimpleSplineBasedPlanner : public PathPlanner
 {
@@ -33,7 +34,7 @@ class SimpleSplineBasedPlanner : public PathPlanner
     void PrepareLaneChange();
     void ObeyRightLaneDrivingPolicy();
 
-    std::pair<bool, double> IsTooCloseToOtherCar(const PathPlannerInput& input) const;
+    std::tuple<bool, double, double> IsTooCloseToOtherCar(const PathPlannerInput& input) const;
 
     std::vector<CartesianPoint> ConvertPointsToLocalSystem(const std::vector<CartesianPoint>& new_path_anchor_points,
                                                            const CartesianPoint& local_reference_point) const;

@@ -21,7 +21,7 @@ static const double KDefaultAcceleration = 0.224;
 static const double KMaxSpeed = 49.5;
 static const double kCriticalThresholdInMeters = 30.0;
 static const double kSimulatorRunloopPeriod = 0.02;
-static const double kXAxisPlanningHorizon = 40;
+static const double kXAxisPlanningHorizon = 40.0;
 
 static const int kMaxNumberOfPointsInPath = 50;
 static const int kLeftmostLaneNumber = 0;
@@ -53,14 +53,22 @@ void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInp
     ObeyRightLaneDrivingPolicy();
 
     auto is_too_close_and_distance = IsTooCloseToOtherCar(input);
-    auto is_too_close_to_other_car = is_too_close_and_distance.first;
-    auto distance_to_other_car = is_too_close_and_distance.second;
+
+    auto is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
+    auto distance_to_other_car = std::get<1>(is_too_close_and_distance);
+    auto other_car_speed = std::get<2>(is_too_close_and_distance);
 
     if (is_too_close_to_other_car)
     {
         // A simple deceleration controler which breaks harder the closer an other vehicle gets
+	auto speed_difference = abs(other_car_speed - input.speed);
+
         auto target_acceleration = (kDistanceForFullBreak / distance_to_other_car) * KDefaultAcceleration;
-        target_speed_ -= KDefaultAcceleration;
+
+        std::cout << "d_othercar | a_target | v_diff |" 
+           << distance_to_other_car << " | " << target_acceleration << " | " << speed_difference << std::endl;
+
+        target_speed_ -= target_acceleration;
         PrepareLaneChange();
     }
     else if (target_speed_ < KMaxSpeed)
@@ -69,7 +77,7 @@ void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInp
     }
 }
 
-std::pair<bool, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& input) const
+std::tuple<bool, double, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& input) const
 {
     double ego_predicted_end_point_s =
         !input.previous_path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
@@ -78,8 +86,9 @@ std::pair<bool, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const Pat
     {
         if (other_car.IsInLane(target_lane_))
         {
+            auto other_car_speed = other_car.Speed2DMagnitude();
             auto predicted_increase_of_s_wrt_our_car =
-                input.previous_path.size() * kSimulatorRunloopPeriod * other_car.Speed2DMagnitude() * 0.447;
+               input.previous_path.size() * kSimulatorRunloopPeriod * other_car_speed * 0.447;
 
             double other_car_predicted_s = other_car.frenet_location.s + predicted_increase_of_s_wrt_our_car;
             auto predicted_distance = other_car_predicted_s - ego_predicted_end_point_s;
@@ -87,11 +96,11 @@ std::pair<bool, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const Pat
             if ((other_car_predicted_s > ego_predicted_end_point_s) &&
                 (predicted_distance < kCriticalThresholdInMeters))
             {
-                return std::make_pair(true, predicted_distance);
+                return std::make_tuple(true, predicted_distance, other_car_speed);
             }
         }
     }
-    return std::make_pair(false, 0.0);
+    return std::make_tuple(false, 0.0, 0.0);
 }
 
 SimpleSplineBasedPlanner::AnchorPoints SimpleSplineBasedPlanner::GenerateAnchorPoints(
@@ -121,10 +130,10 @@ SimpleSplineBasedPlanner::AnchorPoints SimpleSplineBasedPlanner::GenerateAnchorP
         anchors.push_back(reference_point);
     }
 
-    const double kSplineInterpolationDistanceFactor = 30.0;
-    for (auto& i : {1.5 * kSplineInterpolationDistanceFactor,
-                    2.0 * kSplineInterpolationDistanceFactor,
-                    2.5 * kSplineInterpolationDistanceFactor})
+    const double kSplineInterpolationDistanceFactor = 50.0;
+    for (auto& i : {1.0 * kSplineInterpolationDistanceFactor,
+                    1.5 * kSplineInterpolationDistanceFactor,
+                    2.0 * kSplineInterpolationDistanceFactor})
     {
         anchors.push_back(
             map_.FrenetToCartesian({input.frenet_location.s + i, FrenetPoint::LaneCenterDCoord(target_lane_)}));
