@@ -15,7 +15,7 @@ std::pair<bool, int> ChangeLaneCheck(int current_Lane,
 {
     // @todo Check these variable
     double distance_increment{0.0};
-    int lane_change_votes{0};
+    static int lane_change_votes = 0;
     bool lane_change{false};
     int next_d_val{0};
 
@@ -58,8 +58,8 @@ std::pair<bool, int> ChangeLaneCheck(int current_Lane,
             if (carId_back != -1)
             {
                 // Calculate the cars distance and velocity
-                double distance = abs(lane_lines[temp_Lane][carId_back][8]);
-                double velocity = lane_lines[temp_Lane][carId_back][7];
+                double distance = abs(lane_lines[temp_Lane][carId_back][1]);
+                double velocity = lane_lines[temp_Lane][carId_back][0];
 
                 // If we are faster, we can have distance of 15, otherwise we need 30
                 if (!(((velocity < distance_increment) && (distance > 15.0)) ||
@@ -74,8 +74,8 @@ std::pair<bool, int> ChangeLaneCheck(int current_Lane,
             if (carId_front != -1)
             {
                 // Calculate the cars distance and velocity
-                double distance = abs(lane_lines[temp_Lane][carId_front][8]);
-                double velocity = lane_lines[temp_Lane][carId_back][7];
+                double distance = abs(lane_lines[temp_Lane][carId_front][1]);
+                double velocity = lane_lines[temp_Lane][carId_front][0];
 
                 // If we are faster, we can have distance of 15, otherwise we need 30
                 if (!(((velocity > distance_increment) && (distance > 15.0)) ||
@@ -92,9 +92,10 @@ std::pair<bool, int> ChangeLaneCheck(int current_Lane,
         {
             // Increase number of votes to change
             lane_change_votes++;
+            cout << lane_change_votes;
 
             // If count of 20 votes is reached, do a lane change
-            if (lane_change_votes > 20)
+            if (lane_change_votes > 0)
             {
                 // Activate lane change
                 lane_change = true;
@@ -122,7 +123,7 @@ std::pair<bool, int> ChangeLaneCheck(int current_Lane,
     // Update d value
     next_d_val = (destination_Lane * 4) + 2;
 
-    return std::make_pair(lane_change, next_d_val);
+    return std::make_pair(lane_change, destination_Lane);
 }
 
 // Identify the closest car ahead and behind of our car
@@ -212,18 +213,21 @@ int PlanBehavior(int current_lane, PathPlannerInput input)
 {
     // Store information about our three lane lines
     vector<vector<vector<double>>> lane_lines(3);
+    vector<vector<double>> sensor_fusion;
 
     // Assign vehicles from sensor fusion to the corresponding lane
     for (int i = 0; i < input.other_cars.size(); i++)
     {
+        sensor_fusion.push_back(vector<double>());
         // Get vehicle object from sensor fusion
         auto vehicle = input.other_cars[i];
-        vector<vector<double>> sensor_fusion;
         input.other_cars[0].frenet_location.s;
 
+        auto distance = HighwayMap::EuclidDistance(
+                    CartesianPoint(0.0, 0.0), CartesianPoint(vehicle.x_axis_speed, vehicle.y_axis_speed * 0.02));
+
         // Add distance increment (velocity) of the car
-        sensor_fusion[i].push_back(HighwayMap::EuclidDistance(
-            CartesianPoint(0.0, 0.0), CartesianPoint(vehicle.x_axis_speed, vehicle.y_axis_speed * 0.02)));
+        sensor_fusion[i].push_back(distance);
 
         // Add displacement from other car to our car
         sensor_fusion[i].push_back(vehicle.frenet_location.s - input.frenet_location.s);

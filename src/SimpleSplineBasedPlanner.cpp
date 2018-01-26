@@ -22,7 +22,7 @@ double MetersPerSecondToMph(double mps_value)
 }
 
 static const double KDefaultAcceleration = 0.447;
-static const double KMaxSpeed = 49.5;
+static const double KMaxSpeed = 59.5;
 static const double kCriticalThresholdInMeters = 25.0;
 static const double kSimulatorRunloopPeriod = 0.02;
 static const double kXAxisPlanningHorizon = 50.0;
@@ -161,9 +161,10 @@ void SimpleSplineBasedPlanner::ObeyRightLaneDrivingPolicy()
 
 void SimpleSplineBasedPlanner::PrepareLaneChange(PathPlannerInput input)
 {
-    target_lane_ = kLeftmostLaneNumber;
     auto proposed_target_lane = PlanBehavior(target_lane_, input);
     std::cout << "Proposed lane to be changed to | " << proposed_target_lane << std::endl;
+
+    target_lane_ = proposed_target_lane;
 }
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::ConvertPointsToLocalSystem(
