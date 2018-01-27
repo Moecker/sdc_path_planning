@@ -33,7 +33,7 @@ class Vehicle
 
     vector<Vehicle> GeneratePredictions(int horizon = 2);
     void RealizeNextState(vector<Vehicle> trajectory);
-    void Configure(vector<int> road_data);
+    void Configure(vector<double> road_data);
 
     string state_;
     double target_speed_;
@@ -41,6 +41,7 @@ class Vehicle
     int lane_;
     double s_;
     double v_;
+    double d_;
 
     int target_lane_;
     double target_s_;

@@ -14,18 +14,43 @@ add_definitions(-D_USE_MATH_DEFINES -DSSL_MODE_RELEASE_BUFFERS)
 # find_package(ssl)
 # find_package(uWS)
 
+set(headers 
+  src/BehavioralPlanner.h
+  src/CartesianPoint.h
+  src/Cost.h
+  src/DrivingStateMachine.h
+  src/FrenetPoint.h
+  src/fsmlist.hpp
+  src/HighwayMap.h
+  src/json.hpp
+  src/KeepLanePathPlanner.h
+  src/LaneChangePlanner.h
+  src/OtherCar.h
+  src/OutputPath.h  
+  src/PathPlanner.h
+  src/PathPlannerInput.h
+  src/Playground.h
+  src/Road.h
+  src/SimpleSplineBasedPlanner.h
+  src/spline.h
+  src/tinyfsm.hpp
+  src/Vehicle.h
+  src/WebSocketMessageHandler.h
+)
+
 set(sources 
-  src/KeepLanePathPlanner.cpp
-  src/HighwayMap.cpp
-  src/SimpleSplineBasedPlanner.cpp
-  src/WebSocketMessageHandler.cpp
-  src/Vehicle.cpp
+  src/BehavioralPlanner.cpp
   src/Cost.cpp
-  src/Road.cpp
-  src/Playground.cpp
-  src/LaneChangePlanner.cpp
   src/DrivingStateMachine.cpp
+  src/HighwayMap.cpp
+  src/KeepLanePathPlanner.cpp
   src/main.cpp
+  src/LaneChangePlanner.cpp
+  src/Playground.cpp
+  src/Road.cpp
+  src/SimpleSplineBasedPlanner.cpp
+  src/Vehicle.cpp
+  src/WebSocketMessageHandler.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
@@ -43,6 +68,6 @@ if(WIN32)
   # target_include_directories(path-planning PRIVATE src/zlib-1.2.11)
 endif()
 
-add_executable(path-planning ${sources})
+add_executable(path-planning ${headers} ${sources})
 target_include_directories(path-planning PRIVATE src)
 target_link_libraries(path-planning z ssl uv uWS)

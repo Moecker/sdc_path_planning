@@ -48,6 +48,7 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
     path_planner_input.frenet_location = {data["s"], data["d"]};
     path_planner_input.path_endpoint_frenet = {data["end_path_s"], data["end_path_d"]};
 
+    path_planner_input.lane = static_cast<int>(path_planner_input.frenet_location.d / 4);
     path_planner_input.speed = data["speed"];
 
     path_planner_input.previous_path_x = data["previous_path_x"].get<std::vector<double>>();

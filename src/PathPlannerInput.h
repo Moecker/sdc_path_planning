@@ -18,10 +18,10 @@ struct PathPlannerInput
     FrenetPoint frenet_location;
     FrenetPoint path_endpoint_frenet;
 
+    int lane;
     double speed;
 
     std::vector<CartesianPoint> previous_path;
-
     std::vector<double> previous_path_x;
     std::vector<double> previous_path_y;
 

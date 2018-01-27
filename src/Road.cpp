@@ -1,15 +1,25 @@
 #include "Road.h"
 #include <algorithm>
 
-Road::Road(double traffic_density, vector<int> lane_speeds)
+Road::Road(vector<double> lane_speeds)
 {
     this->num_lanes_ = lane_speeds.size();
     this->lane_speeds_ = lane_speeds;
-    this->density_ = traffic_density;
     this->camera_center_ = this->update_width_ / 2.0;
 }
 
 Road::~Road() {}
+
+void Road::UpdateTraffic()
+{
+    auto it = this->vehicles_.begin();
+    while (it != this->vehicles_.end())
+    {
+        auto other_car = it->second;
+        other_car.s_ = 0;
+        other_car.lane_ = 0;
+    }
+}
 
 Vehicle Road::GetEgo()
 {
@@ -71,7 +81,7 @@ void Road::Advance()
     }
 }
 
-void Road::AddEgo(int lane_num, int s, vector<int> config_data)
+void Road::AddEgo(int lane_num, double s, vector<double> config_data)
 {
     map<int, Vehicle>::iterator it = this->vehicles_.begin();
     while (it != this->vehicles_.end())

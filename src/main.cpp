@@ -9,6 +9,7 @@
 #include "uWS/uWS.h"
 
 #include "KeepLanePathPlanner.h"
+#include "Playground.h"
 #include "SimpleSplineBasedPlanner.h"
 #include "WebSocketMessageHandler.h"
 
@@ -19,10 +20,16 @@ using std::string;
 
 const int kStartingLane = 1;
 
-void RunBehaviorPlanner();
-void StateMachineTest();
+void RunPathPlanner();
 
 int main(int argc, char* argv[])
+{
+    RunBehaviorPlanner();
+    StateMachineTest();
+    RunPathPlanner();
+}
+
+void RunPathPlanner()
 {
     uWS::Hub h;
     HighwayMap map("../data/highway_map.csv");

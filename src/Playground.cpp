@@ -1,16 +1,6 @@
 #include <fsmlist.hpp>
 #include "Road.h"
 
-struct Base
-{
-    virtual void ReimplementMe(int a) {}
-};
-
-struct Derived : public Base
-{
-    void ReimplementMe(int a) override {}
-};
-
 void RunBehaviorPlanner()
 {
     using namespace std;
@@ -19,7 +9,7 @@ void RunBehaviorPlanner()
     int kSpeedLimit = 10;
 
     // all traffic in lane (besides ego) follow these speeds
-    vector<int> kLaneSpeeds = {6, 7, 8, 9};
+    vector<double> kLaneSpeeds = {6, 7, 8, 9};
 
     // Number of available "cells" which should have traffic
     double kTrafficDensity = 0.15;
@@ -33,7 +23,7 @@ void RunBehaviorPlanner()
     // These affect the visualization
     int kAmountOfRoadVisible = 40;
 
-    Road road = Road(kTrafficDensity, kLaneSpeeds);
+    Road road = Road(kLaneSpeeds);
 
     road.update_width_ = kAmountOfRoadVisible;
 
@@ -43,7 +33,8 @@ void RunBehaviorPlanner()
     int goal_lane = kGoal[1];
 
     int num_lanes = static_cast<int>(kLaneSpeeds.size());
-    vector<int> ego_config = {kSpeedLimit, num_lanes, goal_s, goal_lane, kMaximumAcceleration};
+    vector<double> ego_config = {
+        (double)kSpeedLimit, (double)num_lanes, (double)goal_s, (double)goal_lane, (double)kMaximumAcceleration};
 
     road.AddEgo(2, 0, ego_config);
     int timestep = 0;

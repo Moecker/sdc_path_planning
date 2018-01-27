@@ -16,15 +16,18 @@ using namespace std;
 class Road
 {
   public:
-    Road(double traffic_density, vector<int> lane_speeds);
+    Road(vector<double> lane_speeds);
     virtual ~Road();
 
-    Vehicle GetEgo();
-    void PopulateTraffic();
     void Advance();
-    void Display(int timestep);
-    void AddEgo(int lane_num, int s, vector<int> config_data);
+    void AddEgo(int lane_num, double s, vector<double> config_data);
 
+    void UpdateTraffic();
+
+    Vehicle GetEgo();
+
+    void PopulateTraffic();
+    void Display(int timestep);
     double update_width_ = 70.0;
 
   private:
@@ -32,8 +35,8 @@ class Road
     int ego_key_ = -1;
     size_t num_lanes_;
 
-    vector<int> lane_speeds_;
-    double density_;
+    vector<double> lane_speeds_;
+    double density_ = 0.15;
     double camera_center_;
 
     // Maps a vehicle id to a actual vehicle including ourself

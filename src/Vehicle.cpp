@@ -336,7 +336,7 @@ void Vehicle::RealizeNextState(vector<Vehicle> trajectory)
     this->a_ = next_state.a_;
 }
 
-void Vehicle::Configure(vector<int> road_data)
+void Vehicle::Configure(vector<double> road_data)
 {
     /*
     Called by simulator before simulation begins. Sets various

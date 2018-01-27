@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "SimpleSplineBasedPlanner.h"
+#include "BehavioralPlanner.h"
 
 double Deg2Rad(double x)
 {
@@ -32,7 +33,8 @@ static const int kLeftmostLaneNumber = 0;
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
 {
-    DecideDrivingPolicyForSpeedAndLane(input);
+    BehavioralPlanner planner(input.frenet_location.s, input.frenet_location.d);
+    // DecideDrivingPolicyForSpeedAndLane(input);
 
     auto anchors_cartesian = GenerateAnchorPoints(input);
     auto anchors_local = ConvertPointsToLocalSystem(anchors_cartesian.anchor_points, anchors_cartesian.reference_point);
