@@ -18,7 +18,7 @@ double GoalDistanceCost(const Vehicle& vehicle,
     double distance = data["distance_to_goal"];
     if (distance > 0)
     {
-        cost = 1 - 2 * exp(-(abs(2.0 * vehicle.goal_lane - data["intended_lane"] - data["final_lane"]) / distance));
+        cost = 1 - 2 * exp(-(abs(2.0 * vehicle.target_lane_ - data["intended_lane"] - data["final_lane"]) / distance));
     }
     else
     {
@@ -40,16 +40,16 @@ double InefficiencyCost(const Vehicle& vehicle,
     double proposed_speed_intended = GetLaneSpeed(predictions, data["intended_lane"]);
     if (proposed_speed_intended < 0)
     {
-        proposed_speed_intended = vehicle.target_speed;
+        proposed_speed_intended = vehicle.target_speed_;
     }
 
     double proposed_speed_final = GetLaneSpeed(predictions, data["final_lane"]);
     if (proposed_speed_final < 0)
     {
-        proposed_speed_final = vehicle.target_speed;
+        proposed_speed_final = vehicle.target_speed_;
     }
 
-    double cost = (2.0 * vehicle.target_speed - proposed_speed_intended - proposed_speed_final) / vehicle.target_speed;
+    double cost = (2.0 * vehicle.target_speed_ - proposed_speed_intended - proposed_speed_final) / vehicle.target_speed_;
 
     return cost;
 }
@@ -64,9 +64,9 @@ double GetLaneSpeed(const map<int, vector<Vehicle>>& predictions, int lane)
     {
         int key = it->first;
         Vehicle vehicle = it->second[0];
-        if (vehicle.lane == lane && key != -1)
+        if (vehicle.lane_ == lane && key != -1)
         {
-            return vehicle.v;
+            return vehicle.v_;
         }
     }
     // Found no vehicle in the lane
@@ -115,21 +115,21 @@ map<string, int> GetTrajectoryMetaData(const Vehicle& vehicle,
     Vehicle trajectory_last = trajectory[1];
     int intended_lane;
 
-    if (trajectory_last.state.compare("PLCL") == 0)
+    if (trajectory_last.state_.compare("PLCL") == 0)
     {
-        intended_lane = trajectory_last.lane + 1;
+        intended_lane = trajectory_last.lane_ + 1;
     }
-    else if (trajectory_last.state.compare("PLCR") == 0)
+    else if (trajectory_last.state_.compare("PLCR") == 0)
     {
-        intended_lane = trajectory_last.lane - 1;
+        intended_lane = trajectory_last.lane_ - 1;
     }
     else
     {
-        intended_lane = trajectory_last.lane;
+        intended_lane = trajectory_last.lane_;
     }
 
-    double distance_to_goal = vehicle.goal_s - trajectory_last.s;
-    int final_lane = trajectory_last.lane;
+    double distance_to_goal = vehicle.target_s_ - trajectory_last.s_;
+    int final_lane = trajectory_last.lane_;
     trajectory_data["intended_lane"] = intended_lane;
     trajectory_data["final_lane"] = final_lane;
     trajectory_data["distance_to_goal"] = static_cast<int>(distance_to_goal);

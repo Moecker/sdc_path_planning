@@ -6,26 +6,24 @@ Road::Road(double traffic_density, vector<int> lane_speeds)
     this->num_lanes_ = lane_speeds.size();
     this->lane_speeds_ = lane_speeds;
     this->density_ = traffic_density;
-    this->camera_center_ = this->kUpdateWidth / 2.0;
+    this->camera_center_ = this->update_width_ / 2.0;
 }
 
-Road::~Road()
-{
-}
+Road::~Road() {}
 
-Vehicle Road::get_ego()
+Vehicle Road::GetEgo()
 {
     return this->vehicles_.find(this->ego_key_)->second;
 }
 
-void Road::populate_traffic()
+void Road::PopulateTraffic()
 {
-    double start_s = std::max(this->camera_center_ - (this->kUpdateWidth / 2.0), 0.0);
+    double start_s = std::max(this->camera_center_ - (this->update_width_ / 2.0), 0.0);
     for (int l = 0; l < this->num_lanes_; l++)
     {
         int lane_speed = this->lane_speeds_[l];
         bool vehicle_just_added = false;
-        for (double s = start_s; s < start_s + this->kUpdateWidth; s++)
+        for (double s = start_s; s < start_s + this->update_width_; s++)
         {
             if (vehicle_just_added)
             {
@@ -33,9 +31,8 @@ void Road::populate_traffic()
             }
             if (((double)rand() / (RAND_MAX)) < this->density_)
             {
-
                 Vehicle vehicle = Vehicle(l, s, lane_speed, 0);
-                vehicle.state = "CS";
+                vehicle.state_ = "CS";
                 this->vehicles_added_ += 1;
                 this->vehicles_.insert(std::pair<int, Vehicle>(vehicles_added_, vehicle));
                 vehicle_just_added = true;
@@ -44,7 +41,7 @@ void Road::populate_traffic()
     }
 }
 
-void Road::advance()
+void Road::Advance()
 {
     map<int, vector<Vehicle> > predictions;
 
@@ -56,6 +53,7 @@ void Road::advance()
         predictions[v_id] = preds;
         it++;
     }
+
     it = this->vehicles_.begin();
     while (it != this->vehicles_.end())
     {
@@ -67,20 +65,20 @@ void Road::advance()
         }
         else
         {
-            it->second.Increment(1);
+            it->second.IncrementFrenetForTimestep(1);
         }
         it++;
     }
 }
 
-void Road::add_ego(int lane_num, int s, vector<int> config_data)
+void Road::AddEgo(int lane_num, int s, vector<int> config_data)
 {
     map<int, Vehicle>::iterator it = this->vehicles_.begin();
     while (it != this->vehicles_.end())
     {
         int v_id = it->first;
         Vehicle v = it->second;
-        if (v.lane == lane_num && v.s == s)
+        if (v.lane_ == lane_num && v.s_ == s)
         {
             this->vehicles_.erase(v_id);
         }
@@ -88,23 +86,23 @@ void Road::add_ego(int lane_num, int s, vector<int> config_data)
     }
     Vehicle ego = Vehicle(lane_num, s, this->lane_speeds_[lane_num], 0);
     ego.Configure(config_data);
-    ego.state = "KL";
+    ego.state_ = "KL";
     this->vehicles_.insert(std::pair<int, Vehicle>(ego_key_, ego));
 }
 
-void Road::display(int timestep)
+void Road::Display(int timestep)
 {
     Vehicle ego = this->vehicles_.find(this->ego_key_)->second;
-    double s = ego.s;
-    string state = ego.state;
+    double s = ego.s_;
+    string state = ego.state_;
 
-    this->camera_center_ = std::max(s, this->kUpdateWidth / 2.0);
-    double s_min = std::max(this->camera_center_ - this->kUpdateWidth / 2.0, 0.0);
-    double s_max = s_min + this->kUpdateWidth;
+    this->camera_center_ = std::max(s, this->update_width_ / 2.0);
+    double s_min = std::max(this->camera_center_ - this->update_width_ / 2.0, 0.0);
+    double s_max = s_min + this->update_width_;
 
     vector<vector<string> > road;
 
-    for (int i = 0; i < this->kUpdateWidth; i++)
+    for (int i = 0; i < this->update_width_; i++)
     {
         vector<string> road_lane;
         for (int ln = 0; ln < this->num_lanes_; ln++)
@@ -121,7 +119,7 @@ void Road::display(int timestep)
         int v_id = it->first;
         Vehicle v = it->second;
 
-        if (s_min <= v.s && v.s < s_max)
+        if (s_min <= v.s_ && v.s_ < s_max)
         {
             string marker = "";
             if (v_id == this->ego_key_)
@@ -142,7 +140,7 @@ void Road::display(int timestep)
                 buffer << oss.str() << " ";
                 marker = buffer.str();
             }
-            road[int(v.s - s_min)][int(v.lane)] = marker;
+            road[int(v.s_ - s_min)][int(v.lane_)] = marker;
         }
         it++;
     }

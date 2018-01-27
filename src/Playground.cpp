@@ -16,50 +16,50 @@ void RunBehaviorPlanner()
     using namespace std;
 
     // impacts default behavior for most states
-    int SPEED_LIMIT = 10;
+    int kSpeedLimit = 10;
 
     // all traffic in lane (besides ego) follow these speeds
-    vector<int> LANE_SPEEDS = {6, 7, 8, 9};
+    vector<int> kLaneSpeeds = {6, 7, 8, 9};
 
     // Number of available "cells" which should have traffic
-    double TRAFFIC_DENSITY = 0.15;
+    double kTrafficDensity = 0.15;
 
     // At each timestep, ego can set acceleration to value between
-    int MAX_ACCEL = 2;
+    int kMaximumAcceleration = 2;
 
     // s value and lane number of goal.
-    vector<int> GOAL = {300, 0};
+    vector<int> kGoal = {300, 0};
 
     // These affect the visualization
-    int AMOUNT_OF_ROAD_VISIBLE = 40;
+    int kAmountOfRoadVisible = 40;
 
-    Road road = Road(TRAFFIC_DENSITY, LANE_SPEEDS);
+    Road road = Road(kTrafficDensity, kLaneSpeeds);
 
-    road.kUpdateWidth = AMOUNT_OF_ROAD_VISIBLE;
+    road.update_width_ = kAmountOfRoadVisible;
 
-    road.populate_traffic();
+    road.PopulateTraffic();
 
-    int goal_s = GOAL[0];
-    int goal_lane = GOAL[1];
+    int goal_s = kGoal[0];
+    int goal_lane = kGoal[1];
 
-    int num_lanes = static_cast<int>(LANE_SPEEDS.size());
-    vector<int> ego_config = {SPEED_LIMIT, num_lanes, goal_s, goal_lane, MAX_ACCEL};
+    int num_lanes = static_cast<int>(kLaneSpeeds.size());
+    vector<int> ego_config = {kSpeedLimit, num_lanes, goal_s, goal_lane, kMaximumAcceleration};
 
-    road.add_ego(2, 0, ego_config);
+    road.AddEgo(2, 0, ego_config);
     int timestep = 0;
 
-    while (road.get_ego().s <= GOAL[0])
+    while (road.GetEgo().s_ <= kGoal[0])
     {
         timestep++;
         if (timestep > 100)
         {
             break;
         }
-        road.advance();
-        road.display(timestep);
+        road.Advance();
+        road.Display(timestep);
     }
-    Vehicle ego = road.get_ego();
-    if (ego.lane == GOAL[1])
+    Vehicle ego = road.GetEgo();
+    if (ego.lane_ == kGoal[1])
     {
         cout << "You got to the goal in " << timestep << " seconds!" << endl;
         if (timestep > 35)
@@ -69,7 +69,7 @@ void RunBehaviorPlanner()
     }
     else
     {
-        cout << "You missed the goal. You are in lane " << ego.lane << " instead of " << GOAL[1] << "." << endl;
+        cout << "You missed the goal. You are in lane " << ego.lane_ << " instead of " << kGoal[1] << "." << endl;
     }
 }
 

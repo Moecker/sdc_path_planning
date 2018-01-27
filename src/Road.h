@@ -16,17 +16,16 @@ using namespace std;
 class Road
 {
   public:
-    double kUpdateWidth = 70.0;
-
     Road(double traffic_density, vector<int> lane_speeds);
     virtual ~Road();
 
-    Vehicle get_ego();
-    void populate_traffic();
-    void advance();
-    void display(int timestep);
+    Vehicle GetEgo();
+    void PopulateTraffic();
+    void Advance();
+    void Display(int timestep);
+    void AddEgo(int lane_num, int s, vector<int> config_data);
 
-    void add_ego(int lane_num, int s, vector<int> config_data);
+    double update_width_ = 70.0;
 
   private:
     string ego_rep_ = " *** ";
@@ -37,6 +36,7 @@ class Road
     double density_;
     double camera_center_;
 
+    // Maps a vehicle id to a actual vehicle including ourself
     map<int, Vehicle> vehicles_;
     int vehicles_added_ = 0;
 };

@@ -1,5 +1,6 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
+
 #include <iostream>
 #include <map>
 #include <random>
@@ -25,7 +26,7 @@ class Vehicle
     vector<Vehicle> LaneChangeTrajectory(string state, map<int, vector<Vehicle>> predictions);
     vector<Vehicle> PrepareLaneChangeTrajectory(string state, map<int, vector<Vehicle>> predictions);
 
-    void Increment(int dt);
+    void IncrementFrenetForTimestep(int dt);
     double PositionAt(int t);
     bool GetVehicleBehind(map<int, vector<Vehicle>> predictions, int lane, Vehicle& rVehicle);
     bool GetVehicleAhead(map<int, vector<Vehicle>> predictions, int lane, Vehicle& rVehicle);
@@ -34,24 +35,24 @@ class Vehicle
     void RealizeNextState(vector<Vehicle> trajectory);
     void Configure(vector<int> road_data);
 
-    string state;
-    double target_speed;
+    string state_;
+    double target_speed_;
 
-    int lane;
-    double s;
-    double v;
+    int lane_;
+    double s_;
+    double v_;
 
-    int goal_lane;
-    double goal_s;
+    int target_lane_;
+    double target_s_;
 
   private:
-    map<string, int> lane_direction = {{"PLCL", 1}, {"LCL", 1}, {"LCR", -1}, {"PLCR", -1}};
-    int preferred_buffer = 6;  // impacts "keep lane" behavior.
+    map<string, int> lane_direction_ = {{"PLCL", 1}, {"LCL", 1}, {"LCR", -1}, {"PLCR", -1}};
+    int preferred_buffer_ = 6;  // impacts "keep lane" behavior.
 
-    double a;
+    double a_;
 
-    int lanes_available;
-    double max_acceleration;
+    int available_lanes_;
+    double max_acceleration_;
 };
 
 #endif
