@@ -48,7 +48,7 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
     path_planner_input.frenet_location = {data["s"], data["d"]};
     path_planner_input.path_endpoint_frenet = {data["end_path_s"], data["end_path_d"]};
 
-    path_planner_input.lane = static_cast<int>(path_planner_input.frenet_location.d / 4);
+    path_planner_input.lane = static_cast<int>(path_planner_input.frenet_location.d / kLaneWidthInD);
     path_planner_input.speed = data["speed"];
 
     path_planner_input.previous_path_x = data["previous_path_x"].get<std::vector<double>>();
@@ -68,6 +68,7 @@ PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
         other_car.x_axis_speed = other_car_data[3];
         other_car.y_axis_speed = other_car_data[4];
         other_car.frenet_location = {other_car_data[5], other_car_data[6]};
+        other_car.lane = static_cast<int>(other_car.frenet_location.d / kLaneWidthInD);
 
         path_planner_input.other_cars.push_back(other_car);
     }

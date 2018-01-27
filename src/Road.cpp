@@ -1,4 +1,5 @@
 #include "Road.h"
+
 #include <algorithm>
 
 Road::Road(vector<double> lane_speeds)
@@ -10,15 +11,24 @@ Road::Road(vector<double> lane_speeds)
 
 Road::~Road() {}
 
-void Road::UpdateTraffic()
+void Road::UpdateTraffic(std::vector<OtherCar> other_cars)
 {
-    auto it = this->vehicles_.begin();
-    while (it != this->vehicles_.end())
+    auto it = other_cars.begin();
+    while (it != other_cars.end())
     {
-        auto other_car = it->second;
-        other_car.s_ = 0;
-        other_car.lane_ = 0;
+        auto other_car = *it;
+        Vehicle vehicle = Vehicle(other_car.lane, other_car.frenet_location.s, other_car.Speed2DMagnitude(), 0.0, "CS");
+        int vehicle_counter = 0;
+        this->vehicles_.insert(std::pair<int, Vehicle>(vehicle_counter, vehicle));
     }
+}
+
+void Road::UpdateEgo(FrenetPoint frenet_point, int lane, double speed)
+{
+    ego_.d_ = frenet_point.d;
+    ego_.s_ = frenet_point.s;
+    ego_.lane_ = lane;
+    ego_.v_ = speed;
 }
 
 Vehicle Road::GetEgo()
@@ -31,7 +41,7 @@ void Road::PopulateTraffic()
     double start_s = std::max(this->camera_center_ - (this->update_width_ / 2.0), 0.0);
     for (int l = 0; l < this->num_lanes_; l++)
     {
-        int lane_speed = this->lane_speeds_[l];
+        double lane_speed = this->lane_speeds_[l];
         bool vehicle_just_added = false;
         for (double s = start_s; s < start_s + this->update_width_; s++)
         {

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "OtherCar.h"
 #include "Vehicle.h"
 
 using namespace std;
@@ -22,7 +23,8 @@ class Road
     void Advance();
     void AddEgo(int lane_num, double s, vector<double> config_data);
 
-    void UpdateTraffic();
+    void UpdateTraffic(std::vector<OtherCar> other_cars);
+    void UpdateEgo(FrenetPoint frenet_point, int lane, double speed);
 
     Vehicle GetEgo();
 
@@ -41,5 +43,7 @@ class Road
 
     // Maps a vehicle id to a actual vehicle including ourself
     map<int, Vehicle> vehicles_;
+    Vehicle ego_;
+
     int vehicles_added_ = 0;
 };

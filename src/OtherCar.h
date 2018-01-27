@@ -19,6 +19,7 @@ struct OtherCar
     double x_axis_speed;
     double y_axis_speed;
     FrenetPoint frenet_location;
+    int lane;
 };
 
 #endif  // PATH_PLANNING_OTHERCAR_H

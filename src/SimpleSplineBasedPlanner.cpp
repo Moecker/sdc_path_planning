@@ -23,7 +23,7 @@ double MetersPerSecondToMph(double mps_value)
 }
 
 static const double KDefaultAcceleration = 0.447;
-static const double KMaxSpeed = 59.5;
+static const double KMaxSpeed = 49.5;
 static const double kCriticalThresholdInMeters = 25.0;
 static const double kSimulatorRunloopPeriod = 0.02;
 static const double kXAxisPlanningHorizon = 50.0;
@@ -33,7 +33,7 @@ static const int kLeftmostLaneNumber = 0;
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
 {
-    BehavioralPlanner planner(input.frenet_location.s, input.frenet_location.d);
+    BehavioralPlanner planner(input.lane, input.frenet_location.s);
     // DecideDrivingPolicyForSpeedAndLane(input);
 
     auto anchors_cartesian = GenerateAnchorPoints(input);

@@ -11,8 +11,10 @@ enum class Lanes : int
     kLeft = 0
 };
 
-BehavioralPlanner::BehavioralPlanner(int current_lane, double current_s) : lane_speeds_{kSpeedLimit, kSpeedLimit, kSpeedLimit}, road_(lane_speeds_)
+BehavioralPlanner::BehavioralPlanner(int current_lane, double current_s)
+        : lane_speeds_{kSpeedLimit, kSpeedLimit, kSpeedLimit}, road_(lane_speeds_)
 {
+    /// @todo Do we need this initialization at all?
     double goal_s = 1e9;
     int goal_lane = static_cast<int>(Lanes::kRight);
     vector<double> ego_config = {kSpeedLimit,
@@ -24,12 +26,14 @@ BehavioralPlanner::BehavioralPlanner(int current_lane, double current_s) : lane_
     road_.AddEgo(current_lane, current_s, ego_config);
 }
 
-std::pair<double, double> BehavioralPlanner::Plan()
+std::pair<double, double> BehavioralPlanner::Plan(PathPlannerInput input)
 {
     double target_speed = 0;
     double target_lane = 0;
 
-    road_.UpdateTraffic();
+    road_.UpdateTraffic(input.other_cars);
+    road_.UpdateEgo(input.frenet_location, input.lane, input.speed);
+
     road_.Advance();
 
     return std::make_pair(target_speed, target_lane);
