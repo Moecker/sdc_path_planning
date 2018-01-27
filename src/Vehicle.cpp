@@ -25,7 +25,7 @@ Vehicle::~Vehicle()
 {
 }
 
-vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions)
+vector<Vehicle> Vehicle::ChooseNextState(map<int, vector<Vehicle>> predictions)
 {
     /*
     Here you can implement the transition_function code from the Behavior Planning Pseudocode
@@ -38,7 +38,7 @@ vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions
     OUTPUT: The the best (lowest cost) trajectory corresponding to the next ego vehicle state.
 
     */
-    vector<string> states = successor_states();
+    vector<string> states = SuccessorStates();
     double cost;
     vector<double> costs;
     vector<string> final_states;
@@ -46,7 +46,7 @@ vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions
 
     for (vector<string>::iterator it = states.begin(); it != states.end(); ++it)
     {
-        vector<Vehicle> trajectory = generate_trajectory(*it, predictions);
+        vector<Vehicle> trajectory = GenerateTrajectory(*it, predictions);
         if (trajectory.size() != 0)
         {
             cost = CalculateCost(*this, predictions, trajectory);
@@ -60,7 +60,7 @@ vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions
     return final_trajectories[best_idx];
 }
 
-vector<string> Vehicle::successor_states()
+vector<string> Vehicle::SuccessorStates()
 {
     /*
     Provides the possible next states given the current state for the FSM
@@ -95,7 +95,7 @@ vector<string> Vehicle::successor_states()
     return states;
 }
 
-vector<Vehicle> Vehicle::generate_trajectory(string state, map<int, vector<Vehicle>> predictions)
+vector<Vehicle> Vehicle::GenerateTrajectory(string state, map<int, vector<Vehicle>> predictions)
 {
     /*
     Given a possible next state, generate the appropriate trajectory to realize the next state.
@@ -103,24 +103,24 @@ vector<Vehicle> Vehicle::generate_trajectory(string state, map<int, vector<Vehic
     vector<Vehicle> trajectory;
     if (state.compare("CS") == 0)
     {
-        trajectory = constant_speed_trajectory();
+        trajectory = ConstantSpeedTrajectory();
     }
     else if (state.compare("KL") == 0)
     {
-        trajectory = keep_lane_trajectory(predictions);
+        trajectory = KeepLaneTrajectory(predictions);
     }
     else if (state.compare("LCL") == 0 || state.compare("LCR") == 0)
     {
-        trajectory = lane_change_trajectory(state, predictions);
+        trajectory = LaneChangeTrajectory(state, predictions);
     }
     else if (state.compare("PLCL") == 0 || state.compare("PLCR") == 0)
     {
-        trajectory = prep_lane_change_trajectory(state, predictions);
+        trajectory = PrepareLaneChangeTrajectory(state, predictions);
     }
     return trajectory;
 }
 
-vector<double> Vehicle::get_kinematics(map<int, vector<Vehicle>> predictions, int lane)
+vector<double> Vehicle::GetKinematics(map<int, vector<Vehicle>> predictions, int lane)
 {
     /*
     Gets next timestep kinematics (position, velocity, acceleration)
@@ -135,10 +135,10 @@ vector<double> Vehicle::get_kinematics(map<int, vector<Vehicle>> predictions, in
     Vehicle vehicle_ahead;
     Vehicle vehicle_behind;
 
-    if (get_vehicle_ahead(predictions, lane, vehicle_ahead))
+    if (GetVehicleAhead(predictions, lane, vehicle_ahead))
     {
 
-        if (get_vehicle_behind(predictions, lane, vehicle_behind))
+        if (GetVehicleBehind(predictions, lane, vehicle_behind))
         {
             new_velocity = vehicle_ahead.v;  // must travel at the speed of traffic, regardless of preferred buffer
         }
@@ -159,24 +159,24 @@ vector<double> Vehicle::get_kinematics(map<int, vector<Vehicle>> predictions, in
     return {new_position, new_velocity, new_accel};
 }
 
-vector<Vehicle> Vehicle::constant_speed_trajectory()
+vector<Vehicle> Vehicle::ConstantSpeedTrajectory()
 {
     /*
     Generate a constant speed trajectory.
     */
-    double next_pos = position_at(1);
+    double next_pos = PositionAt(1);
     vector<Vehicle> trajectory = {Vehicle(this->lane, this->s, this->v, this->a, this->state),
                                   Vehicle(this->lane, next_pos, this->v, 0, this->state)};
     return trajectory;
 }
 
-vector<Vehicle> Vehicle::keep_lane_trajectory(map<int, vector<Vehicle>> predictions)
+vector<Vehicle> Vehicle::KeepLaneTrajectory(map<int, vector<Vehicle>> predictions)
 {
     /*
     Generate a keep lane trajectory.
     */
     vector<Vehicle> trajectory = {Vehicle(lane, this->s, this->v, this->a, state)};
-    vector<double> kinematics = get_kinematics(predictions, this->lane);
+    vector<double> kinematics = GetKinematics(predictions, this->lane);
     double new_s = kinematics[0];
     double new_v = kinematics[1];
     double new_a = kinematics[2];
@@ -184,7 +184,7 @@ vector<Vehicle> Vehicle::keep_lane_trajectory(map<int, vector<Vehicle>> predicti
     return trajectory;
 }
 
-vector<Vehicle> Vehicle::prep_lane_change_trajectory(string state, map<int, vector<Vehicle>> predictions)
+vector<Vehicle> Vehicle::PrepareLaneChangeTrajectory(string state, map<int, vector<Vehicle>> predictions)
 {
     /*
     Generate a trajectory preparing for a lane change.
@@ -195,9 +195,9 @@ vector<Vehicle> Vehicle::prep_lane_change_trajectory(string state, map<int, vect
     Vehicle vehicle_behind;
     int new_lane = this->lane + lane_direction[state];
     vector<Vehicle> trajectory = {Vehicle(this->lane, this->s, this->v, this->a, this->state)};
-    vector<double> curr_lane_new_kinematics = get_kinematics(predictions, this->lane);
+    vector<double> curr_lane_new_kinematics = GetKinematics(predictions, this->lane);
 
-    if (get_vehicle_behind(predictions, this->lane, vehicle_behind))
+    if (GetVehicleBehind(predictions, this->lane, vehicle_behind))
     {
         // Keep speed of current lane so as not to collide with car behind.
         new_s = curr_lane_new_kinematics[0];
@@ -207,7 +207,7 @@ vector<Vehicle> Vehicle::prep_lane_change_trajectory(string state, map<int, vect
     else
     {
         vector<double> best_kinematics;
-        vector<double> next_lane_new_kinematics = get_kinematics(predictions, new_lane);
+        vector<double> next_lane_new_kinematics = GetKinematics(predictions, new_lane);
         // Choose kinematics with lowest velocity.
         if (next_lane_new_kinematics[1] < curr_lane_new_kinematics[1])
         {
@@ -226,7 +226,7 @@ vector<Vehicle> Vehicle::prep_lane_change_trajectory(string state, map<int, vect
     return trajectory;
 }
 
-vector<Vehicle> Vehicle::lane_change_trajectory(string state, map<int, vector<Vehicle>> predictions)
+vector<Vehicle> Vehicle::LaneChangeTrajectory(string state, map<int, vector<Vehicle>> predictions)
 {
     /*
     Generate a lane change trajectory.
@@ -245,22 +245,22 @@ vector<Vehicle> Vehicle::lane_change_trajectory(string state, map<int, vector<Ve
         }
     }
     trajectory.push_back(Vehicle(this->lane, this->s, this->v, this->a, this->state));
-    vector<double> kinematics = get_kinematics(predictions, new_lane);
+    vector<double> kinematics = GetKinematics(predictions, new_lane);
     trajectory.push_back(Vehicle(new_lane, kinematics[0], kinematics[1], kinematics[2], state));
     return trajectory;
 }
 
-void Vehicle::increment(int dt = 1)
+void Vehicle::Increment(int dt = 1)
 {
-    this->s = position_at(dt);
+    this->s = PositionAt(dt);
 }
 
-double Vehicle::position_at(int t)
+double Vehicle::PositionAt(int t)
 {
     return this->s + this->v * t + this->a * t * t / 2.0;
 }
 
-bool Vehicle::get_vehicle_behind(map<int, vector<Vehicle>> predictions, int lane, Vehicle& rVehicle)
+bool Vehicle::GetVehicleBehind(map<int, vector<Vehicle>> predictions, int lane, Vehicle& rVehicle)
 {
     /*
     Returns a true if a vehicle is found behind the current vehicle, false otherwise. The passed reference
@@ -282,7 +282,7 @@ bool Vehicle::get_vehicle_behind(map<int, vector<Vehicle>> predictions, int lane
     return found_vehicle;
 }
 
-bool Vehicle::get_vehicle_ahead(map<int, vector<Vehicle>> predictions, int lane, Vehicle& rVehicle)
+bool Vehicle::GetVehicleAhead(map<int, vector<Vehicle>> predictions, int lane, Vehicle& rVehicle)
 {
     /*
     Returns a true if a vehicle is found ahead of the current vehicle, false otherwise. The passed reference
@@ -304,7 +304,7 @@ bool Vehicle::get_vehicle_ahead(map<int, vector<Vehicle>> predictions, int lane,
     return found_vehicle;
 }
 
-vector<Vehicle> Vehicle::generate_predictions(int horizon)
+vector<Vehicle> Vehicle::GeneratePredictions(int horizon)
 {
     /*
     Generates predictions for non-ego vehicles_ to be used
@@ -313,18 +313,18 @@ vector<Vehicle> Vehicle::generate_predictions(int horizon)
     vector<Vehicle> predictions;
     for (int i = 0; i < horizon; i++)
     {
-        double next_s = position_at(i);
+        double next_s = PositionAt(i);
         double next_v = 0;
         if (i < horizon - 1)
         {
-            next_v = position_at(i + 1) - s;
+            next_v = PositionAt(i + 1) - s;
         }
         predictions.push_back(Vehicle(this->lane, next_s, next_v, 0));
     }
     return predictions;
 }
 
-void Vehicle::realize_next_state(vector<Vehicle> trajectory)
+void Vehicle::RealizeNextState(vector<Vehicle> trajectory)
 {
     /*
     Sets state and kinematics for ego vehicle using the last state of the trajectory.
@@ -337,7 +337,7 @@ void Vehicle::realize_next_state(vector<Vehicle> trajectory)
     this->a = next_state.a;
 }
 
-void Vehicle::configure(vector<int> road_data)
+void Vehicle::Configure(vector<int> road_data)
 {
     /*
     Called by simulator before simulation begins. Sets various

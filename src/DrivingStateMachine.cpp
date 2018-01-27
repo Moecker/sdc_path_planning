@@ -4,10 +4,7 @@
 
 using namespace std;
 
-// ----------------------------------------------------------------------------
 // Motor states
-//
-
 class Stopped : public Motor
 {
     void entry() override
@@ -35,10 +32,7 @@ class Down : public Motor
     };
 };
 
-// ----------------------------------------------------------------------------
 // Base State: default implementations
-//
-
 void Motor::react(MotorStop const&)
 {
     transit<Stopped>();
@@ -56,7 +50,5 @@ void Motor::react(MotorDown const&)
 
 int Motor::direction{0};
 
-// ----------------------------------------------------------------------------
 // Initial state definition
-//
 FSM_INITIAL_STATE(Motor, Stopped)

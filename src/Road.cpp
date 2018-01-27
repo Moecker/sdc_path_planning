@@ -52,7 +52,7 @@ void Road::advance()
     while (it != this->vehicles_.end())
     {
         int v_id = it->first;
-        vector<Vehicle> preds = it->second.generate_predictions();
+        vector<Vehicle> preds = it->second.GeneratePredictions();
         predictions[v_id] = preds;
         it++;
     }
@@ -62,12 +62,12 @@ void Road::advance()
         int v_id = it->first;
         if (v_id == ego_key_)
         {
-            vector<Vehicle> trajectory = it->second.choose_next_state(predictions);
-            it->second.realize_next_state(trajectory);
+            vector<Vehicle> trajectory = it->second.ChooseNextState(predictions);
+            it->second.RealizeNextState(trajectory);
         }
         else
         {
-            it->second.increment(1);
+            it->second.Increment(1);
         }
         it++;
     }
@@ -87,7 +87,7 @@ void Road::add_ego(int lane_num, int s, vector<int> config_data)
         it++;
     }
     Vehicle ego = Vehicle(lane_num, s, this->lane_speeds_[lane_num], 0);
-    ego.configure(config_data);
+    ego.Configure(config_data);
     ego.state = "KL";
     this->vehicles_.insert(std::pair<int, Vehicle>(ego_key_, ego));
 }

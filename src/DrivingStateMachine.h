@@ -3,10 +3,7 @@
 
 #include <tinyfsm.hpp>
 
-// ----------------------------------------------------------------------------
 // Event declarations
-//
-
 struct MotorUp : tinyfsm::Event
 {
 };
@@ -17,9 +14,7 @@ struct MotorStop : tinyfsm::Event
 {
 };
 
-// ----------------------------------------------------------------------------
 // Motor (FSM base class) declaration
-//
 class Motor : public tinyfsm::Fsm<Motor>
 {
     /* NOTE: react(), entry() and exit() functions need to be accessible

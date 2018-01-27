@@ -18,6 +18,13 @@ std::pair<bool, int> ChangeLaneCheck(int current_Lane,
                                      vector<vector<int>>& close_cars,
                                      vector<int>& lane_ranks);
 
+bool CheckFeasibility(int required_changed,
+                      int current_Lane,
+                      int direction,
+                      std::vector<std::vector<int>>& close_cars,
+                      std::vector<std::vector<std::vector<double>>>& lane_lines,
+                      double distance_increment);
+
 // Identify the closest car ahead and behind of our car
 void IdentClosestCars(vector<vector<vector<double>>>& lane_lines, vector<vector<int>>& close_cars);
 
