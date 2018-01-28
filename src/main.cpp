@@ -18,7 +18,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-const int kStartingLane = 1;
+const int kStartingLane = 2;
 
 void RunPathPlanner();
 

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "SimpleSplineBasedPlanner.h"
-#include "BehavioralPlanner.h"
 
 double Deg2Rad(double x)
 {
@@ -33,8 +32,11 @@ static const int kLeftmostLaneNumber = 0;
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
 {
-    BehavioralPlanner planner(input.lane, input.frenet_location.s);
-    // DecideDrivingPolicyForSpeedAndLane(input);
+    DecideDrivingPolicyForSpeedAndLane(input);
+
+//    auto plan = planner_.Plan(input);
+//    target_speed_ = plan.first;
+//    target_lane_ = plan.second;
 
     auto anchors_cartesian = GenerateAnchorPoints(input);
     auto anchors_local = ConvertPointsToLocalSystem(anchors_cartesian.anchor_points, anchors_cartesian.reference_point);
@@ -166,7 +168,16 @@ void SimpleSplineBasedPlanner::PrepareLaneChange(PathPlannerInput input)
     auto proposed_target_lane = PlanBehavior(target_lane_, input);
     std::cout << "Proposed lane to be changed to | " << proposed_target_lane << std::endl;
 
-    target_lane_ = proposed_target_lane;
+    static bool doing_lane_change = false;
+    if (!doing_lane_change && proposed_target_lane != target_lane_)
+    {
+        doing_lane_change = true;
+        target_lane_ = proposed_target_lane;
+    }
+    if (doing_lane_change && proposed_target_lane == target_lane_)
+    {
+        doing_lane_change = false;
+    }
 }
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::ConvertPointsToLocalSystem(

@@ -16,7 +16,7 @@ class PathPlanner
 
   protected:
     const HighwayMap& map_;
-    int target_lane_;
+    int target_lane_ = 0;
 };
 
 #endif  // PATH_PLANNING_PATHPLANNER_H

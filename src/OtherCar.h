@@ -16,10 +16,10 @@ struct OtherCar
     inline bool IsInLane(int lane_number) const { return frenet_location.IsInLane(lane_number); }
 
     CartesianPoint cartesian_location;
-    double x_axis_speed;
-    double y_axis_speed;
+    double x_axis_speed = 0.0;
+    double y_axis_speed = 0.0;
     FrenetPoint frenet_location;
-    int lane;
+    int lane = 0;
 };
 
 #endif  // PATH_PLANNING_OTHERCAR_H

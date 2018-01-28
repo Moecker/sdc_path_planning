@@ -8,3 +8,5 @@ build/
 /src/zlib-1.2.11
 /.idea
 /cmake-build-debug
+/CMakeLists.txt.user
+

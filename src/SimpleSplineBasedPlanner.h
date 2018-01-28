@@ -10,12 +10,13 @@
 
 #include "PathPlanner.h"
 #include "LaneChangePlanner.h"
+#include "BehavioralPlanner.h"
 
 class SimpleSplineBasedPlanner : public PathPlanner
 {
   public:
     explicit SimpleSplineBasedPlanner(const HighwayMap& map, int starting_lane)
-            : PathPlanner(map, starting_lane), target_speed_(0.0){};
+            : PathPlanner(map, starting_lane), target_speed_(0.0), planner_(0, 0.0){};
 
     std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) override;
 
@@ -48,6 +49,7 @@ class SimpleSplineBasedPlanner : public PathPlanner
     AnchorPoints GenerateAnchorPoints(const PathPlannerInput& input) const;
 
     double target_speed_;
+    BehavioralPlanner planner_;
 };
 
 #endif  // PATH_PLANNING_SIMPLESPLINEBASEDPLANNER_H

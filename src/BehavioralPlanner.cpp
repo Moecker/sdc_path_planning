@@ -23,18 +23,18 @@ BehavioralPlanner::BehavioralPlanner(int current_lane, double current_s)
                                  static_cast<double>(goal_lane),
                                  kMaximumAcceleration};
 
-    road_.AddEgo(current_lane, current_s, ego_config);
+    // road_.AddEgo(current_lane, current_s, ego_config);
 }
 
 std::pair<double, double> BehavioralPlanner::Plan(PathPlannerInput input)
 {
-    double target_speed = 0;
-    double target_lane = 0;
-
     road_.UpdateTraffic(input.other_cars);
     road_.UpdateEgo(input.frenet_location, input.lane, input.speed);
 
-    road_.Advance();
+    road_.AdvanceNew();
+
+    double target_speed = road_.ego_.v_;
+    double target_lane = road_.ego_.lane_;
 
     return std::make_pair(target_speed, target_lane);
 }

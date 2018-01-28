@@ -13,13 +13,15 @@ Road::~Road() {}
 
 void Road::UpdateTraffic(std::vector<OtherCar> other_cars)
 {
-    auto it = other_cars.begin();
-    while (it != other_cars.end())
+    int vehicle_counter = 0;
+    this->vehicles_.clear();
+
+    for (auto it = other_cars.begin(); it != other_cars.end(); it++)
     {
         auto other_car = *it;
         Vehicle vehicle = Vehicle(other_car.lane, other_car.frenet_location.s, other_car.Speed2DMagnitude(), 0.0, "CS");
-        int vehicle_counter = 0;
         this->vehicles_.insert(std::pair<int, Vehicle>(vehicle_counter, vehicle));
+        vehicle_counter++;
     }
 }
 
@@ -29,9 +31,15 @@ void Road::UpdateEgo(FrenetPoint frenet_point, int lane, double speed)
     ego_.s_ = frenet_point.s;
     ego_.lane_ = lane;
     ego_.v_ = speed;
+
+//    auto& my = GetEgo();
+//    my.d_ = frenet_point.d;
+//    my.s_ = frenet_point.s;
+//    my.lane_ = lane;
+//    my.v_ = speed;
 }
 
-Vehicle Road::GetEgo()
+Vehicle& Road::GetEgo()
 {
     return this->vehicles_.find(this->ego_key_)->second;
 }
@@ -89,6 +97,24 @@ void Road::Advance()
         }
         it++;
     }
+}
+
+void Road::AdvanceNew()
+{
+    map<int, vector<Vehicle> > predictions;
+
+    map<int, Vehicle>::iterator it = this->vehicles_.begin();
+    while (it != this->vehicles_.end())
+    {
+        int v_id = it->first;
+        vector<Vehicle> preds = it->second.GeneratePredictions();
+        predictions[v_id] = preds;
+        it->second.IncrementFrenetForTimestep(1);
+        it++;
+    }
+
+    auto trajectory = ego_.ChooseNextState(predictions);
+    ego_.RealizeNextState(trajectory);
 }
 
 void Road::AddEgo(int lane_num, double s, vector<double> config_data)

@@ -22,8 +22,8 @@ struct FrenetPoint
         return (d < (kLaneWidthInD * (lane_number + 1))) && (d > (kLaneWidthInD * lane_number));
     }
 
-    double s;
-    double d;
+    double s = 0.0;
+    double d = 0.0;
 };
 
 #endif  // PATH_PLANNING_FRENETPOINT_H

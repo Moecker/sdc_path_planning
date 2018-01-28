@@ -28,9 +28,9 @@ struct CartesianPoint
             local_reference_point.y + (x * sin(local_reference_point.theta) + y * cos(local_reference_point.theta))};
     };
 
-    double x;
-    double y;
-    double theta;
+    double x = 0.0;
+    double y = 0.0;
+    double theta = 0.0;
 };
 
 #endif  // PATH_PLANNING_CARTESIANPOINT_H

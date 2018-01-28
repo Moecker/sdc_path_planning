@@ -35,25 +35,25 @@ class Vehicle
     void RealizeNextState(vector<Vehicle> trajectory);
     void Configure(vector<double> road_data);
 
-    string state_;
-    double target_speed_;
+    string state_= "CS";
 
-    int lane_;
-    double s_;
-    double v_;
-    double d_;
+    int lane_ = 0;
+    double s_ = 0.0;
+    double v_ = 0.0;
+    double d_ = 0.0;
 
-    int target_lane_;
-    double target_s_;
+    int target_lane_ = 0;
+    double target_s_ = 0.0;
+    double target_speed_ = 0.0;
 
   private:
     map<string, int> lane_direction_ = {{"PLCL", 1}, {"LCL", 1}, {"LCR", -1}, {"PLCR", -1}};
     int preferred_buffer_ = 6;  // impacts "keep lane" behavior.
 
-    double a_;
+    double a_ = 0.0;
 
-    int available_lanes_;
-    double max_acceleration_;
+    int available_lanes_ = 0;
+    double max_acceleration_= 0.0;
 };
 
 #endif
