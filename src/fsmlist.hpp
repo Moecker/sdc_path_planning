@@ -4,7 +4,7 @@
 #include <tinyfsm.hpp>
 #include "DrivingStateMachine.h"
 
-typedef tinyfsm::FsmList<Motor> FsmList;
+typedef tinyfsm::FsmList<DrivingState> FsmList;
 
 template <typename E>
 void SendEvent(E const& event)

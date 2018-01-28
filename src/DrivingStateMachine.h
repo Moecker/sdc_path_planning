@@ -1,21 +1,44 @@
 #ifndef MOTOR_HPP_INCLUDED
 #define MOTOR_HPP_INCLUDED
 
+#include <PathPlannerInput.h>
 #include <tinyfsm.hpp>
 
 // Event declarations
-struct MotorUp : tinyfsm::Event
-{
-};
-struct MotorDown : tinyfsm::Event
-{
-};
-struct MotorStop : tinyfsm::Event
+struct PrepareLaneChangeRightIntent : tinyfsm::Event
 {
 };
 
+struct PrepareLaneChangeLeftIntent : tinyfsm::Event
+{
+};
+
+struct ChangeLaneRightIntent : tinyfsm::Event
+{
+};
+
+struct ChangeLaneLeftIntent : tinyfsm::Event
+{
+};
+
+struct LaneChangeCompleted : tinyfsm::Event
+{
+};
+
+struct AbortLaneChange : tinyfsm::Event
+{
+};
+
+struct DataUpdate : tinyfsm::Event
+{
+    DataUpdate() = default;
+    DataUpdate(PathPlannerInput payload0) : payload(payload0) {}
+
+    PathPlannerInput payload;
+};
+
 // Motor (FSM base class) declaration
-class Motor : public tinyfsm::Fsm<Motor>
+class DrivingState : public tinyfsm::Fsm<DrivingState>
 {
     /* NOTE: react(), entry() and exit() functions need to be accessible
      * from tinyfsm::Fsm class. You might as well declare friendship to
@@ -24,22 +47,27 @@ class Motor : public tinyfsm::Fsm<Motor>
      * friend class Fsm;
      */
   public:
+    DrivingState() = default;
+
+    void UpdateWithCurrentInput(const PathPlannerInput& input) { input_ = input; };
+
     /* default reaction for unhandled events */
     void react(tinyfsm::Event const&){};
+    void react(DataUpdate const&);
 
     /* non-virtual declaration: reactions are the same for all states */
-    void react(MotorUp const&);
-    void react(MotorDown const&);
-    void react(MotorStop const&);
+    void react(PrepareLaneChangeRightIntent const&);
+    void react(PrepareLaneChangeLeftIntent const&);
+    void react(ChangeLaneRightIntent const&);
+    void react(ChangeLaneLeftIntent const&);
+    void react(LaneChangeCompleted const&);
+    void react(AbortLaneChange const&);
 
     virtual void entry(void) = 0; /* pure virtual: enforce implementation in all states */
     void exit(void){};            /* no exit actions at all */
 
-  protected:
-    static int direction;
-
-  public:
-    static int getDirection() { return direction; }
+  private:
+    PathPlannerInput input_;
 };
 
 #endif

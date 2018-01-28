@@ -66,10 +66,16 @@ void RunBehaviorPlanner()
 
 void StateMachineTest()
 {
-    MotorDown motor_down;
-    MotorUp motor_up;
+    PrepareLaneChangeLeftIntent plcl;
+    ChangeLaneLeftIntent lcl;
+    LaneChangeCompleted lcc;
 
-    SendEvent(motor_down);
-    SendEvent(motor_up);
-    SendEvent(motor_down);
+    DataUpdate update;
+    update.payload = PathPlannerInput();
+
+    SendEvent(update);
+
+    SendEvent(plcl);
+    SendEvent(lcl);
+    SendEvent(lcc);
 }
