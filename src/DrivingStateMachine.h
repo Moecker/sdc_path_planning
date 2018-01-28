@@ -47,13 +47,10 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
      * friend class Fsm;
      */
   public:
-    DrivingState() = default;
-
-    void UpdateWithCurrentInput(const PathPlannerInput& input) { input_ = input; };
-
     /* default reaction for unhandled events */
     void react(tinyfsm::Event const&){};
-    void react(DataUpdate const&);
+
+    virtual void react(DataUpdate const&);
 
     /* non-virtual declaration: reactions are the same for all states */
     void react(PrepareLaneChangeRightIntent const&);
@@ -66,8 +63,13 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
     virtual void entry(void) = 0; /* pure virtual: enforce implementation in all states */
     void exit(void){};            /* no exit actions at all */
 
-  private:
-    PathPlannerInput input_;
+    double GetTargetSpeed() const { return target_speed_; }
+    double GetTargetLane() const { return target_lane_; }
+
+  protected:
+    static PathPlannerInput input_;
+    static int target_lane_;
+    static double target_speed_;
 };
 
 #endif

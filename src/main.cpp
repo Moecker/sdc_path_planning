@@ -18,14 +18,13 @@ using std::cout;
 using std::endl;
 using std::string;
 
-const int kStartingLane = 2;
+const int kStartingLane = 1;
 
 void RunPathPlanner();
 
 int main(int argc, char* argv[])
 {
     RunBehaviorPlanner();
-    StateMachineTest();
     RunPathPlanner();
 }
 

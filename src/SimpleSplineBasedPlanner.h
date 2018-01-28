@@ -7,16 +7,20 @@
 
 #include <tuple>
 #include "spline.h"
+#include <fsmlist.hpp>
 
-#include "PathPlanner.h"
-#include "LaneChangePlanner.h"
 #include "BehavioralPlanner.h"
+#include "LaneChangePlanner.h"
+#include "PathPlanner.h"
 
 class SimpleSplineBasedPlanner : public PathPlanner
 {
   public:
     explicit SimpleSplineBasedPlanner(const HighwayMap& map, int starting_lane)
-            : PathPlanner(map, starting_lane), target_speed_(0.0), planner_(0, 0.0){};
+            : PathPlanner(map, starting_lane), target_speed_(0.0), planner_(0, 0.0)
+    {
+        FsmList::start();
+    };
 
     std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) override;
 

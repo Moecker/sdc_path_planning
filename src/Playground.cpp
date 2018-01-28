@@ -63,19 +63,3 @@ void RunBehaviorPlanner()
         cout << "You missed the goal. You are in lane " << ego.lane_ << " instead of " << kGoal[1] << "." << endl;
     }
 }
-
-void StateMachineTest()
-{
-    PrepareLaneChangeLeftIntent plcl;
-    ChangeLaneLeftIntent lcl;
-    LaneChangeCompleted lcc;
-
-    DataUpdate update;
-    update.payload = PathPlannerInput();
-
-    SendEvent(update);
-
-    SendEvent(plcl);
-    SendEvent(lcl);
-    SendEvent(lcc);
-}

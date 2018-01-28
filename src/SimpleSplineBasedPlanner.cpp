@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "SimpleSplineBasedPlanner.h"
+#include "fsmlist.hpp"
 
 double Deg2Rad(double x)
 {
@@ -32,11 +33,10 @@ static const int kLeftmostLaneNumber = 0;
 
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
 {
-    DecideDrivingPolicyForSpeedAndLane(input);
+    SendEvent(DataUpdate(input));
 
-//    auto plan = planner_.Plan(input);
-//    target_speed_ = plan.first;
-//    target_lane_ = plan.second;
+    target_speed_ = DrivingState::get_current_state()->GetTargetSpeed();
+    target_lane_ = DrivingState::get_current_state()->GetTargetLane();
 
     auto anchors_cartesian = GenerateAnchorPoints(input);
     auto anchors_local = ConvertPointsToLocalSystem(anchors_cartesian.anchor_points, anchors_cartesian.reference_point);
@@ -57,9 +57,6 @@ void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInp
 {
     const auto kDistanceForFullBreak = 10.0;
     const auto kSpeedDifference = 10.0;
-
-    /// @todo Decide what is the best lane to be in a couple of seconds
-    ObeyRightLaneDrivingPolicy();
 
     auto is_too_close_and_distance = IsTooCloseToOtherCar(input);
 
@@ -83,8 +80,6 @@ void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInp
                   << std::endl;
 
         target_speed_ -= target_acceleration;
-
-        PrepareLaneChange(input);
     }
     else if (target_speed_ < KMaxSpeed)
     {
