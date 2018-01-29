@@ -9,19 +9,6 @@
 #include "SimpleSplineBasedPlanner.h"
 #include "fsmlist.hpp"
 
-double Deg2Rad(double x)
-{
-    return x * M_PI / 180;
-}
-double MphToMetersPerSecond(double mph_value)
-{
-    return mph_value / 2.24;
-}
-double MetersPerSecondToMph(double mps_value)
-{
-    return mps_value * 2.24;
-}
-
 static const double KDefaultAcceleration = 0.447;
 static const double KMaxSpeed = 49.5;
 static const double kCriticalThresholdInMeters = 25.0;

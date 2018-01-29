@@ -24,7 +24,6 @@ void RunPathPlanner();
 
 int main(int argc, char* argv[])
 {
-    RunBehaviorPlanner();
     RunPathPlanner();
 }
 

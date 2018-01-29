@@ -4,6 +4,10 @@
 #include <PathPlannerInput.h>
 #include <tinyfsm.hpp>
 
+double Deg2Rad(double x);
+double MphToMetersPerSecond(double mph_value);
+double MetersPerSecondToMph(double mps_value);
+
 // Event declarations
 struct PrepareLaneChangeRightIntent : tinyfsm::Event
 {
@@ -67,6 +71,8 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
     double GetTargetLane() const { return target_lane_; }
 
   protected:
+    void DefaultPrepareLaneChangeLogic(DataUpdate const& update, int lane, tinyfsm::Event event);
+
     static PathPlannerInput input_;
     static int target_lane_;
     static double target_speed_;
