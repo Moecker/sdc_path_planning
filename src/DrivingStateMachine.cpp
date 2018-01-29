@@ -1,6 +1,7 @@
 #include "DrivingStateMachine.h"
 #include "SimpleSplineBasedPlanner.h"
 
+#include <algorithm>
 #include <fsmlist.hpp>
 #include <iostream>
 #include <tinyfsm.hpp>
@@ -8,8 +9,8 @@
 
 using namespace std;
 
-static const double KDefaultAcceleration = 0.447;
-static const double KMaxSpeed = 49.5;
+static const double KDefaultAcceleration = 1.0;
+static const double KMaxSpeed = 49.0;
 static const double kCriticalThresholdInMeters = 25.0;
 static const double kSimulatorRunloopPeriod = 0.02;
 static const double kXAxisPlanningHorizon = 50.0;
@@ -55,6 +56,83 @@ vector<vector<OtherCar>> GetLaneRelatedOtherCars(const vector<OtherCar>& other_c
     return ret;
 }
 
+std::tuple<bool, double, double> IsTooCloseToOtherCar(const PathPlannerInput& input, int target_lane)
+{
+    for (auto& other_car : input.other_cars)
+    {
+        if (other_car.IsInLane(target_lane))
+        {
+            auto other_car_speed = other_car.Speed2DMagnitude();
+            auto predicted_increase_of_s_other_car = kSimulatorRunloopPeriod * other_car_speed;
+            double other_car_predicted_s = other_car.frenet_location.s + predicted_increase_of_s_other_car;
+
+            auto predicted_increase_of_s_ego = kSimulatorRunloopPeriod * input.speed;
+            double ego_predicted_s = input.frenet_location.s + predicted_increase_of_s_ego;
+
+            auto predicted_distance = other_car_predicted_s - ego_predicted_s;
+
+            if ((other_car_predicted_s > ego_predicted_s) && (predicted_distance < kCriticalThresholdInMeters))
+            {
+                return std::make_tuple(true, predicted_distance, other_car_speed);
+            }
+        }
+    }
+    return std::make_tuple(false, 0.0, 0.0);
+}
+
+std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+{
+    auto is_too_close_and_distance = IsTooCloseToOtherCar(input, target_lane);
+    bool is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
+
+    double target_speed_out = target_speed;
+
+    if (is_too_close_to_other_car)
+    {
+        target_speed_out -= KDefaultAcceleration;
+    }
+    else if (target_speed < KMaxSpeed)
+    {
+        target_speed_out += KDefaultAcceleration;
+    }
+
+    return std::make_pair(is_too_close_to_other_car, target_speed_out);
+}
+
+std::pair<bool, double> KeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+{
+    const auto kDistanceForFullBreak = 10.0;
+    const auto kSpeedDifference = 10.0;
+
+    auto is_too_close_and_distance = IsTooCloseToOtherCar(input, target_lane);
+    bool is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
+
+    double target_speed_out = target_speed;
+
+    if (is_too_close_to_other_car)
+    {
+        auto distance_to_other_car = std::get<1>(is_too_close_and_distance);
+        auto other_car_speed = std::get<2>(is_too_close_and_distance);
+
+        // A simple deceleration controler which breaks harder the closer an other vehicle gets
+        other_car_speed = MetersPerSecondToMph(other_car_speed);
+        auto our_speed = input.speed;
+        auto speed_difference = other_car_speed - our_speed;
+
+        auto target_acceleration = (kDistanceForFullBreak / (2 * distance_to_other_car)) * KDefaultAcceleration;
+        target_acceleration -= ((0.5 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
+        target_acceleration = std::min(target_acceleration, KDefaultAcceleration);
+
+        target_speed_out -= target_acceleration;
+    }
+    else if (target_speed < KMaxSpeed)
+    {
+        target_speed_out += KDefaultAcceleration;
+    }
+
+    return std::make_pair(is_too_close_to_other_car, target_speed_out);
+}
+
 // Motor states
 class KeepingLane : public DrivingState
 {
@@ -67,9 +145,8 @@ class KeepingLane : public DrivingState
     {
         auto average_speed = 0.0;
         auto lr_cars = GetLaneRelatedOtherCars(other_cars);
-        if (lane < 2 && lane > 0)
+        if (lane <= 2 && lane >= 0)
         {
-
             auto lane_cars = lr_cars[lane];
             double acc_speed =
                 std::accumulate(lane_cars.begin(), lane_cars.end(), 0.0, [](double result, OtherCar car2) {
@@ -83,87 +160,29 @@ class KeepingLane : public DrivingState
 
     void DecideDrivingPolicyForSpeedAndLane(const PathPlannerInput& input)
     {
-        const auto kDistanceForFullBreak = 10.0;
-        const auto kSpeedDifference = 10.0;
-
-        auto is_too_close_and_distance = IsTooCloseToOtherCar(input);
-
-        auto is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
-        auto distance_to_other_car = std::get<1>(is_too_close_and_distance);
-        auto other_car_speed = std::get<2>(is_too_close_and_distance);
-
-        // DebugScenario();
-
-        if (is_too_close_to_other_car)
+        auto lane_controller_output = BasicKeepLaneControler(input, target_speed_, target_lane_);
+        auto other_car_too_close = lane_controller_output.first;
+        if (other_car_too_close)
         {
-            // A simple deceleration controler which breaks harder the closer an other vehicle gets
-            other_car_speed = MetersPerSecondToMph(other_car_speed);
-            auto our_speed = input.speed;
-            auto speed_difference = other_car_speed - our_speed;
-
-            auto target_acceleration = (kDistanceForFullBreak / (2 * distance_to_other_car)) * KDefaultAcceleration;
-            target_acceleration -= ((0.5 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
-            target_acceleration = std::min(target_acceleration, KDefaultAcceleration);
-
-            target_speed_ -= target_acceleration;
-
+            auto av_speed_current = GetAverageSpeed(target_lane_, input.other_cars);
             auto av_speed_left = GetAverageSpeed(target_lane_ - 1, input.other_cars);
             auto av_speed_right = GetAverageSpeed(target_lane_ + 1, input.other_cars);
 
-            if (av_speed_left > av_speed_right)
+            if (av_speed_current < max(av_speed_left, av_speed_right))
             {
-                SendEvent(PrepareLaneChangeLeftIntent());
-            }
-            else
-            {
-                SendEvent(PrepareLaneChangeRightIntent());
-            }
-        }
-        else if (target_speed_ < KMaxSpeed)
-        {
-            target_speed_ += KDefaultAcceleration;
-        }
-    }
-
-    void DebugScenario()
-    {
-        target_speed_ = 49.5;
-        srand(time(NULL));
-        auto left = PrepareLaneChangeLeftIntent();
-        auto right = PrepareLaneChangeRightIntent();
-
-        int choice[2] = {0, 1};
-        int decision = choice[rand() % 2];
-
-        if (decision == 1)
-            SendEvent(left);
-        else
-            SendEvent(right);
-    }
-
-    std::tuple<bool, double, double> IsTooCloseToOtherCar(const PathPlannerInput& input) const
-    {
-        double ego_predicted_end_point_s =
-            !input.previous_path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
-
-        for (auto& other_car : input.other_cars)
-        {
-            if (other_car.IsInLane(target_lane_))
-            {
-                auto other_car_speed = other_car.Speed2DMagnitude();
-                auto predicted_increase_of_s_wrt_our_car = kSimulatorRunloopPeriod * other_car_speed;
-
-                double other_car_predicted_s = other_car.frenet_location.s + predicted_increase_of_s_wrt_our_car;
-                auto predicted_distance = other_car_predicted_s - ego_predicted_end_point_s;
-
-                if ((other_car_predicted_s > ego_predicted_end_point_s) &&
-                    (predicted_distance < kCriticalThresholdInMeters))
+                if (av_speed_left > av_speed_right)
                 {
-                    return std::make_tuple(true, predicted_distance, other_car_speed);
+                    SendEvent(PrepareLaneChangeLeftIntent());
+                }
+                else
+                {
+                    SendEvent(PrepareLaneChangeRightIntent());
                 }
             }
         }
-        return std::make_tuple(false, 0.0, 0.0);
+
+        auto target_speed = lane_controller_output.second;
+        target_speed_ = target_speed;
     }
 };
 
@@ -216,21 +235,26 @@ bool IsSafeToChangeLane(double current_s, double speed, vector<OtherCar>& other_
     });
 
     auto closest_car_ahead = std::find_if(other_cars.begin(), other_cars.end(), [current_s](OtherCar car) {
-        return (car.frenet_location.s > current_s);
+        return (car.frenet_location.s >= current_s);
     });
 
-    bool ahead_ok, behind_ok = true;
+    bool ahead_ok = true;
+    bool behind_ok = true;
     if (closest_car_behind != other_cars.end())
     {
         auto distance = abs(current_s - closest_car_behind->frenet_location.s);
-        distance = PredictDistanceInGivenSeconds(3.0, current_s, speed, *closest_car_behind);
-        ahead_ok = (distance > 50.0);
+        distance = PredictDistanceInGivenSeconds(1.0, current_s, speed, *closest_car_behind);
+        cout << "dist_behind: " << distance << " | ";
+        behind_ok = (distance > 40.0);
     }
     if (closest_car_ahead != other_cars.end())
     {
         auto distance = abs(current_s - closest_car_ahead->frenet_location.s);
-        behind_ok = (distance > 50.0);
+        distance = PredictDistanceInGivenSeconds(1.0, current_s, speed, *closest_car_ahead);
+        cout << "dist_ahead: " << distance << " | ";
+        ahead_ok = (distance > 30.0);
     }
+    cout << endl;
 
     return ahead_ok && behind_ok;
 }
@@ -242,18 +266,23 @@ bool IsLaneChangeFeasible(const PathPlannerInput& input, const int for_lane)
     return is_safe;
 }
 
-void DrivingState::DefaultPrepareLaneChangeLogic(DataUpdate const& update, int lane, tinyfsm::Event event)
+void DrivingState::DefaultPrepareLaneChangeLogic(DataUpdate const& update, int final_lane)
 {
-    if ((update.payload.lane < 2 && update.payload.lane > 0) || update.payload.speed < (KMaxSpeed - 10.0))
+    if (true)  // if (update.payload.speed > (KMaxSpeed - 15.0))
     {
-        auto is_feasible = IsLaneChangeFeasible(update.payload, target_lane_ + 1);
+        auto is_feasible = IsLaneChangeFeasible(update.payload, final_lane);
         if (is_feasible)
         {
-            SendEvent(event);
+            if (final_lane > target_lane_)
+                SendEvent(ChangeLaneRightIntent());
+            else
+                SendEvent(ChangeLaneLeftIntent());
         }
         else
         {
-            target_speed_ -= KDefaultAcceleration / 2.0;
+            auto lane_controller_output = BasicKeepLaneControler(update.payload, target_speed_, target_lane_);
+            auto target_speed = lane_controller_output.second;
+            target_speed_ = target_speed;
         }
     }
     else
@@ -266,14 +295,26 @@ class PreparingLaneChangeRight : public DrivingState
 {
     void entry() override { cout << "Preparing to change lane right" << endl; }
 
-    void react(DataUpdate const& update) override { DefaultPrepareLaneChangeLogic(update, 2, ChangeLaneRightIntent()); }
+    void react(DataUpdate const& update) override
+    {
+        if (update.payload.lane < 2)
+        {
+            DefaultPrepareLaneChangeLogic(update, target_lane_ + 1);
+        }
+    }
 };
 
 class PreparingLaneChangeLeft : public DrivingState
 {
     void entry() override { cout << "Preparing to change lane left" << endl; }
 
-    void react(DataUpdate const& update) override { DefaultPrepareLaneChangeLogic(update, 0, ChangeLaneLeftIntent()); }
+    void react(DataUpdate const& update) override
+    {
+        if (update.payload.lane > 0)
+        {
+            DefaultPrepareLaneChangeLogic(update, target_lane_ - 1);
+        }
+    }
 };
 
 // Base State: default implementations

@@ -71,7 +71,7 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
     double GetTargetLane() const { return target_lane_; }
 
   protected:
-    void DefaultPrepareLaneChangeLogic(DataUpdate const& update, int lane, tinyfsm::Event event);
+    void DefaultPrepareLaneChangeLogic(DataUpdate const& update, int final_lane);
 
     static PathPlannerInput input_;
     static int target_lane_;
