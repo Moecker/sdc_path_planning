@@ -9,9 +9,9 @@
 
 using namespace std;
 
-static const double KDefaultAcceleration = 1.0;
+static const double KDefaultAcceleration = 0.70;
 static const double KMaxSpeed = 49.0;
-static const double kCriticalThresholdInMeters = 25.0;
+static const double kCriticalThresholdInMeters = 40.0;
 static const double kSimulatorRunloopPeriod = 0.02;
 static const double kXAxisPlanningHorizon = 50.0;
 
@@ -80,7 +80,7 @@ std::tuple<bool, double, double> IsTooCloseToOtherCar(const PathPlannerInput& in
     return std::make_tuple(false, 0.0, 0.0);
 }
 
-std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+std::pair<bool, double> SimpleKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
 {
     auto is_too_close_and_distance = IsTooCloseToOtherCar(input, target_lane);
     bool is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
@@ -99,7 +99,7 @@ std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, do
     return std::make_pair(is_too_close_to_other_car, target_speed_out);
 }
 
-std::pair<bool, double> KeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
 {
     const auto kDistanceForFullBreak = 10.0;
     const auto kSpeedDifference = 10.0;
@@ -119,8 +119,8 @@ std::pair<bool, double> KeepLaneControler(const PathPlannerInput& input, double 
         auto our_speed = input.speed;
         auto speed_difference = other_car_speed - our_speed;
 
-        auto target_acceleration = (kDistanceForFullBreak / (2 * distance_to_other_car)) * KDefaultAcceleration;
-        target_acceleration -= ((0.5 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
+        auto target_acceleration = (kDistanceForFullBreak / (3 * distance_to_other_car)) * KDefaultAcceleration;
+        target_acceleration -= ((0.3 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
         target_acceleration = std::min(target_acceleration, KDefaultAcceleration);
 
         target_speed_out -= target_acceleration;
@@ -165,6 +165,8 @@ class KeepingLane : public DrivingState
         if (other_car_too_close)
         {
             auto av_speed_current = GetAverageSpeed(target_lane_, input.other_cars);
+            /// @todo Fixme
+            av_speed_current = 0.0;
             auto av_speed_left = GetAverageSpeed(target_lane_ - 1, input.other_cars);
             auto av_speed_right = GetAverageSpeed(target_lane_ + 1, input.other_cars);
 
@@ -238,21 +240,25 @@ bool IsSafeToChangeLane(double current_s, double speed, vector<OtherCar>& other_
         return (car.frenet_location.s >= current_s);
     });
 
+    /// @todo Use min_element instead of find_if!
+
     bool ahead_ok = true;
     bool behind_ok = true;
     if (closest_car_behind != other_cars.end())
     {
         auto distance = abs(current_s - closest_car_behind->frenet_location.s);
         distance = PredictDistanceInGivenSeconds(1.0, current_s, speed, *closest_car_behind);
+        /// @todo Fixme
         cout << "dist_behind: " << distance << " | ";
-        behind_ok = (distance > 40.0);
+        behind_ok = (distance > 20.0);
     }
     if (closest_car_ahead != other_cars.end())
     {
         auto distance = abs(current_s - closest_car_ahead->frenet_location.s);
         distance = PredictDistanceInGivenSeconds(1.0, current_s, speed, *closest_car_ahead);
+        /// @todo Fixme
         cout << "dist_ahead: " << distance << " | ";
-        ahead_ok = (distance > 30.0);
+        ahead_ok = (distance > 20.0);
     }
     cout << endl;
 
@@ -268,6 +274,7 @@ bool IsLaneChangeFeasible(const PathPlannerInput& input, const int for_lane)
 
 void DrivingState::DefaultPrepareLaneChangeLogic(DataUpdate const& update, int final_lane)
 {
+    /// @todo Fixme
     if (true)  // if (update.payload.speed > (KMaxSpeed - 15.0))
     {
         auto is_feasible = IsLaneChangeFeasible(update.payload, final_lane);
