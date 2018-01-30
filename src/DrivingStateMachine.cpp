@@ -230,38 +230,70 @@ double PredictDistanceInGivenSeconds(double pred_seconds, double current_s, doub
     return abs(predicted_other_car - predicted_ego);
 }
 
+struct greater_frenet
+{
+    template <class T>
+    bool operator()(T const& a, T const& b) const
+    {
+        return a.frenet_location.s > b.frenet_location.s;
+    }
+};
+
+struct smaller_frenet
+{
+    template <class T>
+    bool operator()(T const& a, T const& b) const
+    {
+        return a.frenet_location.s < b.frenet_location.s;
+    }
+};
+
 bool IsSafeToChangeLane(double current_s, double speed, vector<OtherCar>& other_cars)
 {
-    auto closest_car_behind = std::find_if(other_cars.begin(), other_cars.end(), [current_s](OtherCar car) {
-        return (car.frenet_location.s < current_s);
+    auto kSafetyDistance = 15.0;
+    std::sort(other_cars.begin(), other_cars.end(), smaller_frenet());
+
+    cout << "Sorted cars s: ";
+    std::for_each(other_cars.begin(), other_cars.end(), [](OtherCar car) { cout << car.frenet_location.s << " | "; });
+    cout << endl;
+    std::for_each(other_cars.begin(), other_cars.end(), [](OtherCar car) { cout << car.lane << " | "; });
+    cout << endl;
+    std::for_each(other_cars.begin(), other_cars.end(), [](OtherCar car) { cout << car.frenet_location.d << " | "; });
+    cout << endl;
+
+    cout << "Current s: " << current_s << endl;
+
+    auto first_car_ahead = std::stable_partition(other_cars.begin(), other_cars.end(), [current_s](OtherCar car) {
+        return (car.frenet_location.s > current_s);
     });
 
-    auto closest_car_ahead = std::find_if(other_cars.begin(), other_cars.end(), [current_s](OtherCar car) {
-        return (car.frenet_location.s >= current_s);
-    });
+    auto closest_car_ahead = std::max_element(other_cars.begin(), first_car_ahead, smaller_frenet());
+    auto closest_car_behind = std::max_element(first_car_ahead, other_cars.end(), smaller_frenet());
 
     /// @todo Use min_element instead of find_if!
 
     bool ahead_ok = true;
     bool behind_ok = true;
-    if (closest_car_behind != other_cars.end())
+    if (closest_car_behind != other_cars.end() && closest_car_behind >= other_cars.begin())
     {
+        cout << "Closest car behind s: " << closest_car_behind->frenet_location.s << " | ";
         auto distance = abs(current_s - closest_car_behind->frenet_location.s);
         distance = PredictDistanceInGivenSeconds(1.0, current_s, speed, *closest_car_behind);
         /// @todo Fixme
         cout << "dist_behind: " << distance << " | ";
-        behind_ok = (distance > 20.0);
+        behind_ok = (distance > kSafetyDistance);
     }
-    if (closest_car_ahead != other_cars.end())
+    if (closest_car_ahead != other_cars.end() && closest_car_behind >= other_cars.begin())
     {
+        cout << "Closest car ahead s: " << closest_car_ahead->frenet_location.s << " | ";
         auto distance = abs(current_s - closest_car_ahead->frenet_location.s);
         distance = PredictDistanceInGivenSeconds(1.0, current_s, speed, *closest_car_ahead);
         /// @todo Fixme
         cout << "dist_ahead: " << distance << " | ";
-        ahead_ok = (distance > 20.0);
+        ahead_ok = (distance > kSafetyDistance);
     }
     cout << endl;
-
+    // return false;
     return ahead_ok && behind_ok;
 }
 
