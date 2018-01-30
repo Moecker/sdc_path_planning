@@ -283,7 +283,7 @@ bool IsSafeToChangeLane(double current_s, double speed, vector<OtherCar>& other_
         cout << "dist_behind: " << distance << " | ";
         behind_ok = (distance > kSafetyDistance);
     }
-    if (closest_car_ahead != other_cars.end() && closest_car_behind >= other_cars.begin())
+    if (closest_car_ahead != other_cars.end() && closest_car_ahead >= other_cars.begin())
     {
         cout << "Closest car ahead s: " << closest_car_ahead->frenet_location.s << " | ";
         auto distance = abs(current_s - closest_car_ahead->frenet_location.s);
