@@ -117,7 +117,7 @@ std::pair<bool, double> PIDKeepLaneControler(const PathPlannerInput& input, doub
     return std::make_pair(is_too_close_to_other_car, target_speed_out);
 }
 
-std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+std::pair<bool, double> SimpleKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
 {
     auto is_too_close_and_distance = IsTooCloseToOtherCar(input, target_lane);
     bool is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
@@ -136,7 +136,7 @@ std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, do
     return std::make_pair(is_too_close_to_other_car, target_speed_out);
 }
 
-std::pair<bool, double> SimpleKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
 {
     const auto kDistanceForFullBreak = 10.0;
     const auto kSpeedDifference = 10.0;
@@ -156,8 +156,8 @@ std::pair<bool, double> SimpleKeepLaneControler(const PathPlannerInput& input, d
         auto our_speed = input.speed;
         auto speed_difference = other_car_speed - our_speed;
 
-        auto target_acceleration = (kDistanceForFullBreak / (1.0 * distance_to_other_car)) * KDefaultAcceleration;
-        target_acceleration -= ((0.5 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
+        auto target_acceleration = (kDistanceForFullBreak / (3.0 * distance_to_other_car)) * KDefaultAcceleration;
+        target_acceleration -= ((0.8 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
         target_acceleration = std::min(target_acceleration, KDefaultAcceleration);
 
         target_speed_out -= target_acceleration;
@@ -181,10 +181,10 @@ class KeepingLane : public DrivingState
     double GetSpeedOfCarAheadForLane(int lane, double current_s, const vector<OtherCar>& other_cars) const
     {
         auto speed = 0.0;
-        auto lr_cars = GetLaneRelatedOtherCars(other_cars);
+        const auto& lr_cars = GetLaneRelatedOtherCars(other_cars);
         if (lane <= 2 && lane >= 0)
         {
-            auto lane_cars = lr_cars[lane];
+            const auto& lane_cars = lr_cars[lane];
             speed = GetSpeedOfCarAhead(current_s, lane_cars);
         }
         return speed;
@@ -192,16 +192,22 @@ class KeepingLane : public DrivingState
 
     double GetSpeedOfCarAhead(double current_s, const vector<OtherCar>& other_cars) const
     {
+        double kDefaultValueIfNoCarSeen = 1000.0;
+        double kRelevantDistanceConsidered = 150.0;
+        double speed = kDefaultValueIfNoCarSeen;
+
         auto behind_and_ahead = FindClosestCarsBehindAndAhead(current_s, other_cars);
         const auto car_ahead = behind_and_ahead.second;
         if (car_ahead != other_cars.end())
         {
-            return car_ahead->Speed2DMagnitude();
+            auto distance = abs(car_ahead->frenet_location.s - current_s);
+            if (distance < kRelevantDistanceConsidered)
+            {
+                speed = car_ahead->Speed2DMagnitude();
+            }
         }
-        else
-        {
-            return 1000.0;
-        }
+
+        return speed;
     }
 
     double GetAverageSpeed(int lane, vector<OtherCar> other_cars)
@@ -238,6 +244,9 @@ class KeepingLane : public DrivingState
             auto av_speed_left = GetSpeedOfCarAheadForLane(target_lane_ - 1, current_s, other_cars);
             auto av_speed_right = GetSpeedOfCarAheadForLane(target_lane_ + 1, current_s, other_cars);
 
+            cout << "speed current: " << av_speed_current << " | av_speed_left: " << av_speed_left
+                 << " | av_speed_right: " << av_speed_right << endl;
+
             if (av_speed_current < max(av_speed_left, av_speed_right))
             {
                 if (av_speed_left > av_speed_right)
@@ -249,6 +258,10 @@ class KeepingLane : public DrivingState
                     SendEvent(PrepareLaneChangeRightIntent());
                 }
             }
+        }
+        else
+        {
+            cout << "Keeping lane at speed: " << target_speed_ << endl;
         }
 
         auto target_speed = lane_controller_output.second;
@@ -292,8 +305,7 @@ class ChangingLaneLeft : public DrivingState
 
 double PredictDistanceInGivenSeconds(double pred_seconds, double current_s, double speed, const OtherCar& other_car)
 {
-    auto predicted_other_car =
-        other_car.frenet_location.s + pred_seconds * MphToMetersPerSecond(other_car.Speed2DMagnitude());
+    auto predicted_other_car = other_car.frenet_location.s + pred_seconds * other_car.Speed2DMagnitude();
     auto predicted_ego = current_s + pred_seconds * MphToMetersPerSecond(speed);
     return abs(predicted_other_car - predicted_ego);
 }
@@ -318,8 +330,8 @@ struct smaller_frenet
 
 bool IsSafeToChangeLane(double current_s, double speed, vector<OtherCar>& other_cars)
 {
-    auto kSafetyDistance = 20.0;
-    auto kTimeToPredict = 1.0;
+    auto kSafetyDistance = 15.0;
+    auto kTimeToPredict = 3.0;
 
     std::sort(other_cars.begin(), other_cars.end(), smaller_frenet());
 
