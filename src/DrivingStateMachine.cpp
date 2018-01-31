@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <fsmlist.hpp>
+#include <future>
 #include <iostream>
 #include <tinyfsm.hpp>
 #include <typeinfo>
@@ -249,6 +250,59 @@ struct smaller_frenet
 };
 
 bool IsSafeToChangeLane(double current_s, double speed, vector<OtherCar>& other_cars)
+{
+    auto kSafetyDistance = 15.0;
+    std::sort(other_cars.begin(), other_cars.end(), smaller_frenet());
+
+    cout << "Sorted cars s: ";
+    std::for_each(other_cars.begin(), other_cars.end(), [](OtherCar car) { cout << car.frenet_location.s << " | "; });
+    cout << endl;
+    std::for_each(other_cars.begin(), other_cars.end(), [](OtherCar car) { cout << car.lane << " | "; });
+    cout << endl;
+
+    cout << "Current s: " << current_s << endl;
+
+    auto car_behind = other_cars.end();
+    auto car_ahead = other_cars.end();
+    for (auto car = other_cars.begin(); car != other_cars.end(); ++car)
+    {
+        if (current_s > car->frenet_location.s)
+        {
+            car_behind = car;
+        }
+        else
+        {
+            car_ahead = car;
+            break;
+        }
+    }
+
+    bool ahead_ok = true;
+    bool behind_ok = true;
+
+
+    if (car_behind != other_cars.end())
+    {
+        cout << "car_behind s: " << car_behind->frenet_location.s << " | ";
+        auto distance = abs(car_behind->frenet_location.s - current_s);
+        cout << "dist_behind: " << distance << endl;
+
+        behind_ok = (distance > kSafetyDistance);
+    }
+    if (car_ahead != other_cars.end())
+    {
+        cout << "car_ahead s: " << car_ahead->frenet_location.s << " | ";
+        auto distance = abs(car_ahead->frenet_location.s - current_s);
+        cout << "dist_ahead: " << distance << endl;
+
+        ahead_ok = (distance > kSafetyDistance);
+    }
+
+    // return false;
+    return ahead_ok && behind_ok;
+}
+
+bool IsSafeToChangeLaneOldApproach(double current_s, double speed, vector<OtherCar>& other_cars)
 {
     auto kSafetyDistance = 15.0;
     std::sort(other_cars.begin(), other_cars.end(), smaller_frenet());
