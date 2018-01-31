@@ -1,3 +1,7 @@
+///
+/// @file
+///
+
 #ifndef COST_H
 #define COST_H
 

@@ -201,15 +201,15 @@ bool CheckFeasibility(int required_changed,
     {
         // Check if we can change lane
         int temp_Lane = abs(current_Lane + (j * direction));
-        int carId_back = close_cars[temp_Lane][0];
-        int carId_front = close_cars[temp_Lane][1];
+        int car_id_back = close_cars[temp_Lane][0];
+        int car_id_front = close_cars[temp_Lane][1];
 
         // Check for cars behind us
-        if (carId_back != -1)
+        if (car_id_back != -1)
         {
             // Calculate the cars distance and velocity
-            double distance = abs(lane_lines[temp_Lane][carId_back][1]);
-            double velocity = lane_lines[temp_Lane][carId_back][0];
+            double distance = abs(lane_lines[temp_Lane][car_id_back][1]);
+            double velocity = lane_lines[temp_Lane][car_id_back][0];
 
             // If we are faster, we can have distance of 15, otherwise we need 30
             if (!(((velocity < distance_increment) && (distance > 15.0)) ||
@@ -221,11 +221,11 @@ bool CheckFeasibility(int required_changed,
         }
 
         // Check for cars in front of us
-        if (carId_front != -1)
+        if (car_id_front != -1)
         {
             // Calculate the cars distance and velocity
-            double distance = abs(lane_lines[temp_Lane][carId_front][1]);
-            double velocity = lane_lines[temp_Lane][carId_front][0];
+            double distance = abs(lane_lines[temp_Lane][car_id_front][1]);
+            double velocity = lane_lines[temp_Lane][car_id_front][0];
 
             // If we are faster, we can have distance of 15, otherwise we need 30
             if (!(((velocity > distance_increment) && (distance > 15.0)) ||

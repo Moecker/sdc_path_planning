@@ -1,6 +1,9 @@
-#include <functional>
+///
+/// @file
+///
 
 #include "Cost.h"
+#include <functional>
 
 const double kReachGoal = pow(10, 6);
 const double kEfficiency = pow(10, 5);
@@ -49,7 +52,8 @@ double InefficiencyCost(const Vehicle& vehicle,
         proposed_speed_final = vehicle.target_speed_;
     }
 
-    double cost = (2.0 * vehicle.target_speed_ - proposed_speed_intended - proposed_speed_final) / vehicle.target_speed_;
+    double cost =
+        (2.0 * vehicle.target_speed_ - proposed_speed_intended - proposed_speed_final) / vehicle.target_speed_;
 
     return cost;
 }

@@ -13,8 +13,16 @@
 
 struct PathPlannerInput
 {
-    PathPlannerInput() : cartesian_location(), frenet_location(),
-        path_endpoint_frenet(), previous_path(), previous_path_x(), previous_path_y(), other_cars() {}
+    PathPlannerInput()
+            : cartesian_location(),
+              frenet_location(),
+              path_endpoint_frenet(),
+              previous_path(),
+              previous_path_x(),
+              previous_path_y(),
+              other_cars()
+    {
+    }
 
     CartesianPoint cartesian_location;
 

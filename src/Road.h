@@ -1,3 +1,10 @@
+///
+/// @file
+///
+
+#ifndef ROAD_H
+#define ROAD_H
+
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -50,3 +57,5 @@ class Road
 
     int vehicles_added_ = 0;
 };
+
+#endif

@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <vector>
 
-#include <Road.h>
 #include <PathPlannerInput.h>
+#include <Road.h>
 
 #ifndef BEHAVIORAL_PLANNING_H
 #define BEHAVIORAL_PLANNING_H

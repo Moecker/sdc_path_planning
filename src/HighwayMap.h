@@ -16,8 +16,10 @@ class HighwayMap
 {
   public:
     HighwayMap(const std::string& highway_map_csv_path);
+
     CartesianPoint FrenetToCartesian(const FrenetPoint& frenet_point) const;
     FrenetPoint CartesianToFrenet(const CartesianPoint& cartesian_point) const;
+
     int NextWaypoint(CartesianPoint current_vehicle_location) const;
     int ClosestWaypoint(CartesianPoint current_vehicle_location) const;
 

@@ -5,9 +5,9 @@
 #ifndef PATH_PLANNING_SIMPLESPLINEBASEDPLANNER_H
 #define PATH_PLANNING_SIMPLESPLINEBASEDPLANNER_H
 
+#include <fsmlist.hpp>
 #include <tuple>
 #include "spline.h"
-#include <fsmlist.hpp>
 
 #include "BehavioralPlanner.h"
 #include "LaneChangePlanner.h"

@@ -33,6 +33,7 @@ struct AbortLaneChange : tinyfsm::Event
 {
 };
 
+// Data update event which is triggered each time a new input is received
 struct DataUpdate : tinyfsm::Event
 {
     DataUpdate() = default;
@@ -41,7 +42,7 @@ struct DataUpdate : tinyfsm::Event
     PathPlannerInput payload;
 };
 
-// Motor (FSM base class) declaration
+// DrivingState (FSM base class) declaration
 class DrivingState : public tinyfsm::Fsm<DrivingState>
 {
     /* NOTE: react(), entry() and exit() functions need to be accessible
@@ -54,6 +55,7 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
     /* default reaction for unhandled events */
     void react(tinyfsm::Event const&){};
 
+    // Reaction on a new input form simulator
     virtual void react(DataUpdate const&);
 
     /* non-virtual declaration: reactions are the same for all states */
@@ -67,12 +69,14 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
     virtual void entry(void) = 0; /* pure virtual: enforce implementation in all states */
     void exit(void){};            /* no exit actions at all */
 
+    // Accessors for the internal speed and lane which is the interface to the actual controler
     double GetTargetSpeed() const { return target_speed_; }
-    double GetTargetLane() const { return target_lane_; }
+    int GetTargetLane() const { return target_lane_; }
 
   protected:
     void DefaultPrepareLaneChangeLogic(DataUpdate const& update, int final_lane);
 
+    // need to be static, since the states derived from this FSM are actually not instatiated, but used on class level!
     static PathPlannerInput input_;
     static int target_lane_;
     static double target_speed_;

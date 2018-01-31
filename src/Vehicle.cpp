@@ -1,3 +1,7 @@
+///
+/// @file
+///
+
 #include "Vehicle.h"
 #include <algorithm>
 #include <cmath>
@@ -7,9 +11,7 @@
 #include <string>
 #include "Cost.h"
 
-Vehicle::Vehicle()
-{
-}
+Vehicle::Vehicle() {}
 
 Vehicle::Vehicle(int lane, double s, double v, double a, string state)
 {
@@ -21,9 +23,7 @@ Vehicle::Vehicle(int lane, double s, double v, double a, string state)
     max_acceleration_ = -1;
 }
 
-Vehicle::~Vehicle()
-{
-}
+Vehicle::~Vehicle() {}
 
 vector<Vehicle> Vehicle::ChooseNextState(map<int, vector<Vehicle>> predictions)
 {
@@ -343,8 +343,8 @@ void Vehicle::Configure(vector<double> road_data)
     parameters which will impact the ego vehicle.
     */
     target_speed_ = road_data[0];
-    available_lanes_ = road_data[1];
+    available_lanes_ = static_cast<int>(road_data[1]);
     target_s_ = road_data[2];
-    target_lane_ = road_data[3];
+    target_lane_ = static_cast<int>(road_data[3]);
     max_acceleration_ = road_data[4];
 }

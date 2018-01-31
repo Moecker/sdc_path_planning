@@ -6,7 +6,6 @@
 #define PATH_PLANNING_LANE_CHANGE_PLANNER_H
 
 #include <vector>
-
 #include "PathPlannerInput.h"
 
 using std::vector;

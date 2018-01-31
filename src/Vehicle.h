@@ -1,3 +1,7 @@
+///
+/// @file
+///
+
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
@@ -35,7 +39,7 @@ class Vehicle
     void RealizeNextState(vector<Vehicle> trajectory);
     void Configure(vector<double> road_data);
 
-    string state_= "CS";
+    string state_ = "CS";
 
     int lane_ = 0;
     double s_ = 0.0;
@@ -53,7 +57,7 @@ class Vehicle
     double a_ = 0.0;
 
     int available_lanes_ = 0;
-    double max_acceleration_= 0.0;
+    double max_acceleration_ = 0.0;
 };
 
 #endif

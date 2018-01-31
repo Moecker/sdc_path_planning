@@ -11,6 +11,7 @@ class KeepLanePathPlanner : public PathPlanner
 {
   public:
     explicit KeepLanePathPlanner(const HighwayMap& map, int starting_lane) : PathPlanner(map, starting_lane){};
+
     std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) override;
 };
 

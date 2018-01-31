@@ -1,6 +1,6 @@
-//
-// Created by Stanislav Olekhnovich on 02/08/2017.
-//
+///
+/// @file
+///
 
 #ifndef PF_WEBSOCKETMESSAGEHANDLER_H
 #define PF_WEBSOCKETMESSAGEHANDLER_H
