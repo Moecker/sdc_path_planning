@@ -36,6 +36,7 @@ set(headers
   src/tinyfsm.hpp
   src/Vehicle.h
   src/WebSocketMessageHandler.h
+  src/pid/pid.h
 )
 
 set(sources 
@@ -51,6 +52,7 @@ set(sources
   src/SimpleSplineBasedPlanner.cpp
   src/Vehicle.cpp
   src/WebSocketMessageHandler.cpp
+  src/pid/pid.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 

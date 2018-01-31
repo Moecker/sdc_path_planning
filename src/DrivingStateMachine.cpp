@@ -1,6 +1,7 @@
 #include "DrivingStateMachine.h"
 #include "SimpleSplineBasedPlanner.h"
 
+#include <pid/pid.h>
 #include <algorithm>
 #include <fsmlist.hpp>
 #include <future>
@@ -30,6 +31,27 @@ double MphToMetersPerSecond(double mph_value)
 double MetersPerSecondToMph(double mps_value)
 {
     return mps_value * 2.24;
+}
+
+typedef vector<OtherCar>::const_iterator OtherCarIterator;
+std::pair<OtherCarIterator, OtherCarIterator> FindClosestCarsBehindAndAhead(double current_s,
+                                                                            const vector<OtherCar>& other_cars)
+{
+    OtherCarIterator car_behind = other_cars.end();
+    OtherCarIterator car_ahead = other_cars.end();
+    for (OtherCarIterator car = other_cars.begin(); car != other_cars.end(); ++car)
+    {
+        if (current_s > car->frenet_location.s)
+        {
+            car_behind = car;
+        }
+        else
+        {
+            car_ahead = car;
+            break;
+        }
+    }
+    return std::make_pair(car_behind, car_ahead);
 }
 
 vector<vector<OtherCar>> GetLaneRelatedOtherCars(const vector<OtherCar>& other_cars)
@@ -81,7 +103,21 @@ std::tuple<bool, double, double> IsTooCloseToOtherCar(const PathPlannerInput& in
     return std::make_tuple(false, 0.0, 0.0);
 }
 
-std::pair<bool, double> SimpleKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+std::pair<bool, double> PIDKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+{
+    static PID pid = PID(0.1, 100, -100, kSimulatorRunloopPeriod, KMaxSpeed, KDefaultAcceleration);
+    auto is_too_close_and_distance = IsTooCloseToOtherCar(input, target_lane);
+
+    bool is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
+    auto other_car_speed = std::get<2>(is_too_close_and_distance);
+
+    double new_speed = pid.calculate(other_car_speed, target_speed);
+    double target_speed_out = new_speed;
+
+    return std::make_pair(is_too_close_to_other_car, target_speed_out);
+}
+
+std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
 {
     auto is_too_close_and_distance = IsTooCloseToOtherCar(input, target_lane);
     bool is_too_close_to_other_car = std::get<0>(is_too_close_and_distance);
@@ -100,7 +136,7 @@ std::pair<bool, double> SimpleKeepLaneControler(const PathPlannerInput& input, d
     return std::make_pair(is_too_close_to_other_car, target_speed_out);
 }
 
-std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
+std::pair<bool, double> SimpleKeepLaneControler(const PathPlannerInput& input, double target_speed, int target_lane)
 {
     const auto kDistanceForFullBreak = 10.0;
     const auto kSpeedDifference = 10.0;
@@ -120,8 +156,8 @@ std::pair<bool, double> BasicKeepLaneControler(const PathPlannerInput& input, do
         auto our_speed = input.speed;
         auto speed_difference = other_car_speed - our_speed;
 
-        auto target_acceleration = (kDistanceForFullBreak / (3 * distance_to_other_car)) * KDefaultAcceleration;
-        target_acceleration -= ((0.3 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
+        auto target_acceleration = (kDistanceForFullBreak / (1.0 * distance_to_other_car)) * KDefaultAcceleration;
+        target_acceleration -= ((0.5 * speed_difference) / kSpeedDifference) * KDefaultAcceleration;
         target_acceleration = std::min(target_acceleration, KDefaultAcceleration);
 
         target_speed_out -= target_acceleration;
@@ -141,6 +177,32 @@ class KeepingLane : public DrivingState
     void entry() override { cout << "Keeping Lane" << endl; }
 
     void react(DataUpdate const& update) override { DecideDrivingPolicyForSpeedAndLane(update.payload); }
+
+    double GetSpeedOfCarAheadForLane(int lane, double current_s, const vector<OtherCar>& other_cars) const
+    {
+        auto speed = 0.0;
+        auto lr_cars = GetLaneRelatedOtherCars(other_cars);
+        if (lane <= 2 && lane >= 0)
+        {
+            auto lane_cars = lr_cars[lane];
+            speed = GetSpeedOfCarAhead(current_s, lane_cars);
+        }
+        return speed;
+    }
+
+    double GetSpeedOfCarAhead(double current_s, const vector<OtherCar>& other_cars) const
+    {
+        auto behind_and_ahead = FindClosestCarsBehindAndAhead(current_s, other_cars);
+        const auto car_ahead = behind_and_ahead.second;
+        if (car_ahead != other_cars.end())
+        {
+            return car_ahead->Speed2DMagnitude();
+        }
+        else
+        {
+            return 1000.0;
+        }
+    }
 
     double GetAverageSpeed(int lane, vector<OtherCar> other_cars)
     {
@@ -165,11 +227,16 @@ class KeepingLane : public DrivingState
         auto other_car_too_close = lane_controller_output.first;
         if (other_car_too_close)
         {
-            auto av_speed_current = GetAverageSpeed(target_lane_, input.other_cars);
-            /// @todo Fixme
-            av_speed_current = 0.0;
-            auto av_speed_left = GetAverageSpeed(target_lane_ - 1, input.other_cars);
-            auto av_speed_right = GetAverageSpeed(target_lane_ + 1, input.other_cars);
+            //            auto av_speed_current = GetAverageSpeed(target_lane_, input.other_cars);
+            //            av_speed_current = 0.0;
+            //            auto av_speed_left = GetAverageSpeed(target_lane_ - 1, input.other_cars);
+            //            auto av_speed_right = GetAverageSpeed(target_lane_ + 1, input.other_cars);
+
+            auto current_s = input.frenet_location.s;
+            auto& other_cars = input.other_cars;
+            auto av_speed_current = GetSpeedOfCarAheadForLane(target_lane_, current_s, other_cars);
+            auto av_speed_left = GetSpeedOfCarAheadForLane(target_lane_ - 1, current_s, other_cars);
+            auto av_speed_right = GetSpeedOfCarAheadForLane(target_lane_ + 1, current_s, other_cars);
 
             if (av_speed_current < max(av_speed_left, av_speed_right))
             {
@@ -223,7 +290,7 @@ class ChangingLaneLeft : public DrivingState
     }
 };
 
-double PredictDistanceInGivenSeconds(double pred_seconds, double current_s, double speed, OtherCar& other_car)
+double PredictDistanceInGivenSeconds(double pred_seconds, double current_s, double speed, const OtherCar& other_car)
 {
     auto predicted_other_car =
         other_car.frenet_location.s + pred_seconds * MphToMetersPerSecond(other_car.Speed2DMagnitude());
@@ -251,50 +318,55 @@ struct smaller_frenet
 
 bool IsSafeToChangeLane(double current_s, double speed, vector<OtherCar>& other_cars)
 {
-    auto kSafetyDistance = 15.0;
+    auto kSafetyDistance = 20.0;
+    auto kTimeToPredict = 1.0;
+
     std::sort(other_cars.begin(), other_cars.end(), smaller_frenet());
 
     cout << "Sorted cars s: ";
     std::for_each(other_cars.begin(), other_cars.end(), [](OtherCar car) { cout << car.frenet_location.s << " | "; });
     cout << endl;
-    std::for_each(other_cars.begin(), other_cars.end(), [](OtherCar car) { cout << car.lane << " | "; });
-    cout << endl;
 
     cout << "Current s: " << current_s << endl;
 
-    auto car_behind = other_cars.end();
-    auto car_ahead = other_cars.end();
-    for (auto car = other_cars.begin(); car != other_cars.end(); ++car)
-    {
-        if (current_s > car->frenet_location.s)
-        {
-            car_behind = car;
-        }
-        else
-        {
-            car_ahead = car;
-            break;
-        }
-    }
+    //    auto car_behind = other_cars.end();
+    //    auto car_ahead = other_cars.end();
+    //    for (auto car = other_cars.begin(); car != other_cars.end(); ++car)
+    //    {
+    //        if (current_s > car->frenet_location.s)
+    //        {
+    //            car_behind = car;
+    //        }
+    //        else
+    //        {
+    //            car_ahead = car;
+    //            break;
+    //        }
+    //    }
+
+    auto behind_and_ahead = FindClosestCarsBehindAndAhead(current_s, other_cars);
+    auto car_behind = behind_and_ahead.first;
+    auto car_ahead = behind_and_ahead.second;
 
     bool ahead_ok = true;
     bool behind_ok = true;
-
 
     if (car_behind != other_cars.end())
     {
         cout << "car_behind s: " << car_behind->frenet_location.s << " | ";
         auto distance = abs(car_behind->frenet_location.s - current_s);
-        cout << "dist_behind: " << distance << endl;
-
+        cout << "dist_behind: " << distance << " | ";
+        distance = PredictDistanceInGivenSeconds(kTimeToPredict, current_s, speed, *car_behind);
+        cout << "predicted_dist_behind: " << distance << endl;
         behind_ok = (distance > kSafetyDistance);
     }
     if (car_ahead != other_cars.end())
     {
         cout << "car_ahead s: " << car_ahead->frenet_location.s << " | ";
         auto distance = abs(car_ahead->frenet_location.s - current_s);
-        cout << "dist_ahead: " << distance << endl;
-
+        cout << "dist_ahead: " << distance << " | ";
+        distance = PredictDistanceInGivenSeconds(kTimeToPredict, current_s, speed, *car_ahead);
+        cout << "predicted_dist_ahead: " << distance << endl;
         ahead_ok = (distance > kSafetyDistance);
     }
 
