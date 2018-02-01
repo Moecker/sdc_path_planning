@@ -4,9 +4,10 @@
 
 #include <fstream>
 #include <thread>
+
+#include <uWS/uWS.h>
+#include <3rdparty/json.hpp>
 #include "Eigen-3.3/Eigen/Core"
-#include "json.hpp"
-#include "uWS/uWS.h"
 
 #include "KeepLanePathPlanner.h"
 #include "Playground.h"

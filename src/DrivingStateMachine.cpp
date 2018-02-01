@@ -2,17 +2,16 @@
 /// @file
 ///
 
-#include "DrivingStateMachine.h"
-#include "SimpleSplineBasedPlanner.h"
-
-#include <pid/pid.h>
 #include <algorithm>
-#include <fsmlist.hpp>
 #include <future>
 #include <iostream>
 #include <numeric>
-#include <tinyfsm.hpp>
 #include <typeinfo>
+#include <pid/pid.h>
+
+#include "DrivingStateMachine.h"
+#include "SimpleSplineBasedPlanner.h"
+#include "FsmList.h"
 
 enum Lanes
 {

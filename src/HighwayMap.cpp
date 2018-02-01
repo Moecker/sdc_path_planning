@@ -2,12 +2,12 @@
 /// @file
 ///
 
-#include "HighwayMap.h"
-
-#include <uWS/uWS.h>
 #include <fstream>
 #include <sstream>
 #include <thread>
+
+#include <uWS/uWS.h>
+#include "HighwayMap.h"
 
 HighwayMap::HighwayMap(const std::string& highway_map_csv_path)
 {

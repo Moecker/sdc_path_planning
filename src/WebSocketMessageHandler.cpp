@@ -24,6 +24,43 @@ string WebSocketMessageHandler::CreateResponseMessage(const std::vector<Cartesia
     return msg;
 }
 
+PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
+{
+    PathPlannerInput path_planner_input;
+
+    path_planner_input.cartesian_location = { data["x"], data["y"], data["yaw"] };
+
+    path_planner_input.frenet_location = { data["s"], data["d"] };
+    path_planner_input.path_endpoint_frenet = { data["end_path_s"], data["end_path_d"] };
+
+    path_planner_input.lane = static_cast<int>(path_planner_input.frenet_location.d / kLaneWidthInD);
+    path_planner_input.speed = data["speed"];
+
+    path_planner_input.previous_path_x = data["previous_path_x"].get<std::vector<double>>();
+    path_planner_input.previous_path_y = data["previous_path_y"].get<std::vector<double>>();
+
+    assert(path_planner_input.previous_path_x.size() == path_planner_input.previous_path_y.size());
+    for (int i = 0; i < path_planner_input.previous_path_x.size(); i++)
+    {
+        path_planner_input.previous_path.emplace_back(path_planner_input.previous_path_x[i],
+            path_planner_input.previous_path_y[i]);
+    }
+
+    auto sensor_fusion_data = data["sensor_fusion"].get<std::vector<std::vector<double>>>();
+    for (auto& other_car_data : sensor_fusion_data)
+    {
+        OtherCar other_car;
+        other_car.x_axis_speed = other_car_data[3];
+        other_car.y_axis_speed = other_car_data[4];
+        other_car.frenet_location = { other_car_data[5], other_car_data[6] };
+        other_car.lane = static_cast<int>(other_car.frenet_location.d / kLaneWidthInD);
+
+        path_planner_input.other_cars.push_back(other_car);
+    }
+
+    return path_planner_input;
+}
+
 void SaveToFileInput(json data)
 {
     static std::ofstream o("../input.json");
@@ -48,49 +85,14 @@ string WebSocketMessageHandler::ProcessMessageContent(string& content)
     {
         auto data = json_content[1];
         SaveToFileInput(data);
+
         auto path_planner_input = ReadPlannerInput(data);
         auto output_path = path_planner_.GeneratePath(path_planner_input);
+
         response = CreateResponseMessage(output_path);
         SaveToFileResponse(response);
     }
     return response;
-}
-
-PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
-{
-    PathPlannerInput path_planner_input;
-
-    path_planner_input.cartesian_location = {data["x"], data["y"], data["yaw"]};
-
-    path_planner_input.frenet_location = {data["s"], data["d"]};
-    path_planner_input.path_endpoint_frenet = {data["end_path_s"], data["end_path_d"]};
-
-    path_planner_input.lane = static_cast<int>(path_planner_input.frenet_location.d / kLaneWidthInD);
-    path_planner_input.speed = data["speed"];
-
-    path_planner_input.previous_path_x = data["previous_path_x"].get<std::vector<double>>();
-    path_planner_input.previous_path_y = data["previous_path_y"].get<std::vector<double>>();
-
-    assert(path_planner_input.previous_path_x.size() == path_planner_input.previous_path_y.size());
-    for (int i = 0; i < path_planner_input.previous_path_x.size(); i++)
-    {
-        path_planner_input.previous_path.emplace_back(path_planner_input.previous_path_x[i],
-                                                      path_planner_input.previous_path_y[i]);
-    }
-
-    auto sensor_fusion_data = data["sensor_fusion"].get<std::vector<std::vector<double>>>();
-    for (auto& other_car_data : sensor_fusion_data)
-    {
-        OtherCar other_car;
-        other_car.x_axis_speed = other_car_data[3];
-        other_car.y_axis_speed = other_car_data[4];
-        other_car.frenet_location = {other_car_data[5], other_car_data[6]};
-        other_car.lane = static_cast<int>(other_car.frenet_location.d / kLaneWidthInD);
-
-        path_planner_input.other_cars.push_back(other_car);
-    }
-
-    return path_planner_input;
 }
 
 string WebSocketMessageHandler::GetMessageContent(const string& message)

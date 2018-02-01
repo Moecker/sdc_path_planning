@@ -20,9 +20,8 @@ set(headers
   src/Cost.h
   src/DrivingStateMachine.h
   src/FrenetPoint.h
-  src/fsmlist.hpp
+  src/FsmList.h
   src/HighwayMap.h
-  src/json.hpp
   src/KeepLanePathPlanner.h
   src/LaneChangePlanner.h
   src/OtherCar.h
@@ -32,11 +31,8 @@ set(headers
   src/Playground.h
   src/Road.h
   src/SimpleSplineBasedPlanner.h
-  src/spline.h
-  src/tinyfsm.hpp
   src/Vehicle.h
   src/WebSocketMessageHandler.h
-  src/pid/pid.h
 )
 
 set(sources 
@@ -45,7 +41,6 @@ set(sources
   src/DrivingStateMachine.cpp
   src/HighwayMap.cpp
   src/KeepLanePathPlanner.cpp
-  src/main.cpp
   src/LaneChangePlanner.cpp
   src/Playground.cpp
   src/Road.cpp
@@ -70,6 +65,16 @@ if(WIN32)
   # target_include_directories(path-planning PRIVATE src/zlib-1.2.11)
 endif()
 
-add_executable(path-planning ${headers} ${sources})
-target_include_directories(path-planning PRIVATE src)
-target_link_libraries(path-planning z ssl uv uWS)
+# Lib
+add_library(path-planning-lib ${headers} ${sources})
+target_include_directories(path-planning-lib PUBLIC src)
+target_link_libraries(path-planning-lib  PUBLIC z ssl uv uWS)
+
+# Main executable
+add_executable(path-planning src/main.cpp)
+target_link_libraries(path-planning path-planning-lib)
+
+# Test executable
+add_executable(path-planning-test test/main.cpp)
+target_include_directories(path-planning-test  PRIVATE test)
+target_link_libraries(path-planning-test  path-planning-lib)

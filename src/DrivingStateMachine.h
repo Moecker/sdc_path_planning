@@ -1,8 +1,9 @@
 #ifndef MOTOR_HPP_INCLUDED
 #define MOTOR_HPP_INCLUDED
 
+#include <3rdparty/tinyfsm.hpp>
+
 #include <PathPlannerInput.h>
-#include <tinyfsm.hpp>
 
 double Deg2Rad(double x);
 double MphToMetersPerSecond(double mph_value);
