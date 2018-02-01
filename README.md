@@ -1,6 +1,23 @@
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
 
+## Model Documentation
+The project Path Planning consists of three main blocks, Behavior Planning, Prediction and Trajectory Generation.
+
+###  Behavior Planning
+Under the hood there is a finite state machine consisting of five states: "Keep Lane", "Prepare Lane Change Left/Right", "Lane Change Left/Right".
+There is a set of transition functions when the behavior planner encounters a situation where a change in states makes sense.
+If another vehicle in front is too slow, it evaluates the speed of the vehicles left and right of the current lane and choose to prepare a lane change to the lane with the higher speed.
+In the Preparation state, the gap between the to-be-followed car on the desired lane and the car behind it is computed.
+If considered safe to change lanes, a transition into "Change Lane" state is triggered.
+Once this state is active, the lane change is executed until the next lane is reached. This event is marked as "Lane Change Completed "and state transitions again into "Keep Lane"
+
+### Prediction
+tbd
+
+### Trajectory Generation
+tbd
+
 ### Goals
 In this project your goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. You will be provided the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
 

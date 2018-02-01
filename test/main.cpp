@@ -37,6 +37,7 @@ std::vector<std::string> ReadStringFromFile(std::string file_name)
     while (std::getline(file, line))
     {
         std::istringstream iss(line);
+        line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         jsons.push_back(line);
     }
     file.close();
