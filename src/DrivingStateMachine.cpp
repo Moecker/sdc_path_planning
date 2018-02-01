@@ -353,7 +353,7 @@ class KeepingLane : public DrivingState
     double GetSpeedOfCarAhead(double current_s, const vector<OtherCar>& other_cars) const
     {
         double kDefaultValueIfNoCarSeen = 1000.0;
-        double kRelevantDistanceConsidered = 150.0;
+        double kRelevantDistanceConsidered = 100.0;
         double speed = kDefaultValueIfNoCarSeen;
 
         auto behind_and_ahead = FindClosestCarsBehindAndAhead(current_s, other_cars);
@@ -393,11 +393,6 @@ class KeepingLane : public DrivingState
         auto other_car_too_close = lane_controller_output.first;
         if (other_car_too_close)
         {
-            //            auto av_speed_current = GetAverageSpeed(target_lane_, input.other_cars);
-            //            av_speed_current = 0.0;
-            //            auto av_speed_left = GetAverageSpeed(target_lane_ - 1, input.other_cars);
-            //            auto av_speed_right = GetAverageSpeed(target_lane_ + 1, input.other_cars);
-
             auto current_s = input.frenet_location.s;
             auto& other_cars = input.other_cars;
             auto av_speed_current = GetSpeedOfCarAheadForLane(target_lane_, current_s, other_cars);
@@ -407,7 +402,7 @@ class KeepingLane : public DrivingState
             std::cout << "speed current: " << av_speed_current << " | av_speed_left: " << av_speed_left
                       << " | av_speed_right: " << av_speed_right << std::endl;
 
-            if (av_speed_current < max(av_speed_left, av_speed_right))
+            if (av_speed_current < (max(av_speed_left, av_speed_right) + 2.0))
             {
                 if (av_speed_left > av_speed_right)
                 {

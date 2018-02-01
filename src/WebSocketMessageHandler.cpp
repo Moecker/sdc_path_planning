@@ -3,6 +3,7 @@
 ///
 
 #include "WebSocketMessageHandler.h"
+#include <fstream>
 
 string WebSocketMessageHandler::CreateResponseMessage(const std::vector<CartesianPoint>& path)
 {
@@ -23,6 +24,20 @@ string WebSocketMessageHandler::CreateResponseMessage(const std::vector<Cartesia
     return msg;
 }
 
+void SaveToFileInput(json data)
+{
+    static std::ofstream o("../input.json");
+    o << data;
+    o << std::endl;
+}
+
+void SaveToFileResponse(string data)
+{
+    static std::ofstream o("../response.json");
+    o << data;
+    o << std::endl;
+}
+
 string WebSocketMessageHandler::ProcessMessageContent(string& content)
 {
     auto json_content = json::parse(content);
@@ -32,9 +47,11 @@ string WebSocketMessageHandler::ProcessMessageContent(string& content)
     if (event_type == "telemetry")
     {
         auto data = json_content[1];
+        SaveToFileInput(data);
         auto path_planner_input = ReadPlannerInput(data);
         auto output_path = path_planner_.GeneratePath(path_planner_input);
         response = CreateResponseMessage(output_path);
+        SaveToFileResponse(response);
     }
     return response;
 }
