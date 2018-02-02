@@ -47,8 +47,12 @@ std::vector<std::string> ReadStringFromFile(std::string file_name)
 
 int main(int argc, char* argv[])
 {
-    auto jsons_input = ReadJsonFromFile("../test-data/input.json");
-    auto strings_response = ReadStringFromFile("../test-data/response.json");
+    std::string input_file = argv[1];
+    std::string response_file = argv[2];
+    std::string highwaymap_file = argv[3];
+
+    auto jsons_input = ReadJsonFromFile(input_file);
+    auto strings_response = ReadStringFromFile(response_file);
 
     std::cout << jsons_input.size() << std::endl;
     std::cout << strings_response.size() << std::endl;
@@ -56,7 +60,7 @@ int main(int argc, char* argv[])
     assert(jsons_input.size() == strings_response.size());
 
     auto kStartingLane = 1;
-    HighwayMap map("../data/highway_map.csv");
+    HighwayMap map(highwaymap_file);
     SimpleSplineBasedPlanner path_planner(map, kStartingLane);
 
     bool result = true;
