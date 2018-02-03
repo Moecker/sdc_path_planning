@@ -1,3 +1,8 @@
+///
+/// @file
+/// @brief Note: Taken from https://gist.github.com/bradley219/5373998
+///
+
 #ifndef _PID_SOURCE_
 #define _PID_SOURCE_
 

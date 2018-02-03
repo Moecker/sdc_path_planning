@@ -1,5 +1,6 @@
 ///
 /// @file
+/// @brief Note: Deprecated, as we use the DrivingStateMachine for behavior planning
 ///
 
 #include "BehavioralPlanner.h"
@@ -11,6 +12,7 @@ enum class Lanes : int
     kLeft = 0
 };
 
+/// @deprecated: Now used in DrivingState class
 BehavioralPlanner::BehavioralPlanner(int current_lane, double current_s)
         : lane_speeds_{kSpeedLimit, kSpeedLimit, kSpeedLimit}, road_(lane_speeds_)
 {
@@ -23,6 +25,7 @@ BehavioralPlanner::BehavioralPlanner(int current_lane, double current_s)
                                  kMaximumAcceleration};
 }
 
+/// @deprecated: Now used in DrivingState class
 std::pair<double, double> BehavioralPlanner::Plan(PathPlannerInput input)
 {
     road_.UpdateTraffic(input.other_cars);

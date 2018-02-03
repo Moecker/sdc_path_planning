@@ -1,5 +1,6 @@
 ///
 /// @file
+/// @brief FSM class for all deiscions for our path planner
 ///
 
 #include <algorithm>

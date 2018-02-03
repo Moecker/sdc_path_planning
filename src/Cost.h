@@ -1,5 +1,6 @@
 ///
 /// @file
+/// @brief Note: Taken from Udacity quizzes
 ///
 
 #ifndef COST_H
