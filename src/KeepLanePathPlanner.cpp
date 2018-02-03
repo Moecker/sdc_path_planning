@@ -4,7 +4,7 @@
 
 #include "KeepLanePathPlanner.h"
 
-std::vector<CartesianPoint> KeepLanePathPlanner::GeneratePath(PathPlannerInput input)
+std::vector<CartesianPoint> KeepLanePathPlanner::GeneratePath(const PathPlannerInput& input)
 {
     std::vector<CartesianPoint> output_path;
     double dist_inc = 0.3;

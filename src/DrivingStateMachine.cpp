@@ -351,7 +351,7 @@ class KeepingLane : public DrivingState
 
     double GetSpeedOfCarAhead(double current_s, const vector<OtherCar>& other_cars) const
     {
-        double kDefaultValueIfNoCarSeen = 1000.0;
+        double kDefaultValueIfNoCarSeen = 100.0;
         double kRelevantDistanceConsidered = 100.0;
         double speed = kDefaultValueIfNoCarSeen;
 
@@ -401,7 +401,7 @@ class KeepingLane : public DrivingState
             std::cout << "speed current: " << av_speed_current << " | av_speed_left: " << av_speed_left
                       << " | av_speed_right: " << av_speed_right << std::endl;
 
-            if (av_speed_current < (max(av_speed_left, av_speed_right) + 2.0))
+            if (av_speed_current < (max(av_speed_left, av_speed_right)))
             {
                 if (av_speed_left > av_speed_right)
                 {

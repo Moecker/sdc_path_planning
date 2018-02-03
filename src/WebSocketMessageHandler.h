@@ -20,7 +20,7 @@ class WebSocketMessageHandler
     WebSocketMessageHandler(PathPlanner& path_planner) : path_planner_(path_planner) {}
     void HandleMessage(const string& message, uWS::WebSocket<uWS::SERVER>& ws);
 
-    static PathPlannerInput ReadPlannerInput(json data);
+    static PathPlannerInput ReadPlannerInput(const json& data);
     static string CreateResponseMessage(const std::vector<CartesianPoint>& path);
 
   private:

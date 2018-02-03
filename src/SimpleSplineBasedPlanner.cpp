@@ -19,7 +19,7 @@ static const double kXAxisPlanningHorizon = 50.0;
 static const int kMaxNumberOfPointsInPath = 50;
 static const int kLeftmostLaneNumber = 0;
 
-std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
+std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(const PathPlannerInput& input)
 {
     SendEvent(DataUpdate(input));
 
@@ -69,9 +69,9 @@ SimpleSplineBasedPlanner::AnchorPoints SimpleSplineBasedPlanner::GenerateAnchorP
     }
 
     const double kSplineInterpolationDistanceFactor = 50.0;
-    for (auto& i : {1.0 * kSplineInterpolationDistanceFactor,
-                    1.5 * kSplineInterpolationDistanceFactor,
-                    2.0 * kSplineInterpolationDistanceFactor})
+    for (auto& i : {1.25 * kSplineInterpolationDistanceFactor,
+                    1.50 * kSplineInterpolationDistanceFactor,
+                    1.75 * kSplineInterpolationDistanceFactor})
     {
         anchors.push_back(
             map_.FrenetToCartesian({input.frenet_location.s + i, FrenetPoint::LaneCenterDCoord(target_lane_)}));

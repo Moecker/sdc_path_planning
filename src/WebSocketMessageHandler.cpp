@@ -24,7 +24,7 @@ string WebSocketMessageHandler::CreateResponseMessage(const std::vector<Cartesia
     return msg;
 }
 
-PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(json data)
+PathPlannerInput WebSocketMessageHandler::ReadPlannerInput(const json& data)
 {
     PathPlannerInput path_planner_input;
 
@@ -84,13 +84,15 @@ string WebSocketMessageHandler::ProcessMessageContent(string& content)
     if (event_type == "telemetry")
     {
         auto data = json_content[1];
-        SaveToFileInput(data);
+        // Activate saving of file if we want to create a test
+        // SaveToFileInput(data);
 
         auto path_planner_input = ReadPlannerInput(data);
         auto output_path = path_planner_.GeneratePath(path_planner_input);
 
         response = CreateResponseMessage(output_path);
-        SaveToFileResponse(response);
+        // Same here, for generating tests
+        // SaveToFileResponse(response);
     }
     return response;
 }

@@ -12,7 +12,7 @@ class KeepLanePathPlanner : public PathPlanner
   public:
     explicit KeepLanePathPlanner(const HighwayMap& map, int starting_lane) : PathPlanner(map, starting_lane){};
 
-    std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) override;
+    std::vector<CartesianPoint> GeneratePath(const PathPlannerInput& input) override;
 };
 
 #endif  // PATH_PLANNING_KEEPLANEPATHPLANNER_H

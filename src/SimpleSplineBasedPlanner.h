@@ -22,7 +22,7 @@ class SimpleSplineBasedPlanner : public PathPlanner
         FsmList::start();
     };
 
-    std::vector<CartesianPoint> GeneratePath(PathPlannerInput input) override;
+    std::vector<CartesianPoint> GeneratePath(const PathPlannerInput& input) override;
 
   private:
     struct AnchorPoints
