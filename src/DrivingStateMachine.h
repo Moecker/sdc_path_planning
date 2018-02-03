@@ -1,9 +1,13 @@
+///
+/// @file
+/// @brief FSM class for all deiscions for our path planner
+///
+
 #ifndef MOTOR_HPP_INCLUDED
 #define MOTOR_HPP_INCLUDED
 
-#include <3rdparty/tinyfsm.hpp>
-
 #include <PathPlannerInput.h>
+#include <3rdparty/tinyfsm.hpp>
 
 double Deg2Rad(double x);
 double MphToMetersPerSecond(double mph_value);
@@ -46,20 +50,16 @@ struct DataUpdate : tinyfsm::Event
 // DrivingState (FSM base class) declaration
 class DrivingState : public tinyfsm::Fsm<DrivingState>
 {
-    /* NOTE: react(), entry() and exit() functions need to be accessible
-     * from tinyfsm::Fsm class. You might as well declare friendship to
-     * tinyfsm::Fsm, and make these functions private:
-     *
-     * friend class Fsm;
-     */
+    // NOTE: react(), entry() and exit() functions need to be accessible
+    // from tinyfsm::Fsm class.
   public:
-    /* default reaction for unhandled events */
+    // Default reaction for unhandled events
     void react(tinyfsm::Event const&){};
 
     // Reaction on a new input form simulator
     virtual void react(DataUpdate const&);
 
-    /* non-virtual declaration: reactions are the same for all states */
+    // Non-virtual declaration: reactions are the same for all states
     void react(PrepareLaneChangeRightIntent const&);
     void react(PrepareLaneChangeLeftIntent const&);
     void react(ChangeLaneRightIntent const&);
@@ -67,8 +67,9 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
     void react(LaneChangeCompleted const&);
     void react(AbortLaneChange const&);
 
-    virtual void entry(void) = 0; /* pure virtual: enforce implementation in all states */
-    void exit(void){};            /* no exit actions at all */
+    // Pure virtual: enforce implementation in all states
+    virtual void entry(void) = 0;
+    void exit(void){};
 
     // Accessors for the internal speed and lane which is the interface to the actual controler
     double GetTargetSpeed() const { return target_speed_; }
@@ -77,7 +78,7 @@ class DrivingState : public tinyfsm::Fsm<DrivingState>
   protected:
     void DefaultPrepareLaneChangeLogic(DataUpdate const& update, int final_lane);
 
-    // need to be static, since the states derived from this FSM are actually not instatiated, but used on class level!
+    // Needs to be static, since the states derived from this FSM are actually not instatiated, but used on class level!
     static PathPlannerInput input_;
     static int target_lane_;
     static double target_speed_;

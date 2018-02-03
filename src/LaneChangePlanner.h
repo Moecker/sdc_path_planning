@@ -1,5 +1,6 @@
 ///
 /// @file
+/// @brief Note: Deprecated, as we use the DrivingStateMachine for behavior planning
 ///
 
 #ifndef PATH_PLANNING_LANE_CHANGE_PLANNER_H

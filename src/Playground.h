@@ -1,5 +1,6 @@
 ///
 /// @file
+/// @brief Note: Just for experiments
 ///
 
 #ifndef PLAYGROUND_H

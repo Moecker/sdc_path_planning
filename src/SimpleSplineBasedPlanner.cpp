@@ -9,16 +9,6 @@
 #include "FsmList.h"
 #include "SimpleSplineBasedPlanner.h"
 
-/// @deprecated: Now used in DrivingState class
-static const double KDefaultAcceleration = 0.447;
-static const double KMaxSpeed = 49.5;
-static const double kCriticalThresholdInMeters = 25.0;
-static const double kSimulatorRunloopPeriod = 0.02;
-static const double kXAxisPlanningHorizon = 50.0;
-
-static const int kMaxNumberOfPointsInPath = 50;
-static const int kLeftmostLaneNumber = 0;
-
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GeneratePath(PathPlannerInput input)
 {
     SendEvent(DataUpdate(input));
@@ -95,6 +85,10 @@ std::vector<CartesianPoint> SimpleSplineBasedPlanner::ConvertPointsToLocalSystem
 std::vector<CartesianPoint> SimpleSplineBasedPlanner::GenerateNewPointsWithSpline(const tk::spline& new_path_spline,
                                                                                   int points_left_in_current_path) const
 {
+    double kSimulatorRunloopPeriod = 0.02;
+    const double kXAxisPlanningHorizon = 50.0;
+    const int kMaxNumberOfPointsInPath = 50;
+
     const double path_end_point_x = kXAxisPlanningHorizon;
     double path_end_point_y = new_path_spline(path_end_point_x);
     double path_length = sqrt(path_end_point_x * path_end_point_x + path_end_point_y * path_end_point_y);
@@ -134,6 +128,9 @@ tk::spline SimpleSplineBasedPlanner::MakeSplineFromAnchorPoints(
 /// @deprecated: Now used in DrivingState class
 void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInput input)
 {
+    const double KDefaultAcceleration = 0.447;
+    const double KMaxSpeed = 49.5;
+
     const auto kDistanceForFullBreak = 10.0;
     const auto kSpeedDifference = 10.0;
 
@@ -169,6 +166,8 @@ void SimpleSplineBasedPlanner::DecideDrivingPolicyForSpeedAndLane(PathPlannerInp
 /// @deprecated: Now used in DrivingState class
 std::tuple<bool, double, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(const PathPlannerInput& input) const
 {
+    const double kCriticalThresholdInMeters = 25.0;
+
     double ego_predicted_end_point_s =
         !input.previous_path.empty() ? input.path_endpoint_frenet.s : input.frenet_location.s;
 
@@ -177,8 +176,7 @@ std::tuple<bool, double, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(
         if (other_car.IsInLane(target_lane_))
         {
             auto other_car_speed = other_car.Speed2DMagnitude();
-            auto predicted_increase_of_s_wrt_our_car =
-                input.previous_path.size() * kSimulatorRunloopPeriod * other_car_speed * KDefaultAcceleration;
+            auto predicted_increase_of_s_wrt_our_car = input.previous_path.size() * other_car_speed;
 
             double other_car_predicted_s = other_car.frenet_location.s + predicted_increase_of_s_wrt_our_car;
             auto predicted_distance = other_car_predicted_s - ego_predicted_end_point_s;
@@ -193,6 +191,7 @@ std::tuple<bool, double, double> SimpleSplineBasedPlanner::IsTooCloseToOtherCar(
     return std::make_tuple(false, 0.0, 0.0);
 }
 
+/// @deprecated: Now used in DrivingState class
 void SimpleSplineBasedPlanner::PrepareLaneChange(PathPlannerInput input)
 {
     auto proposed_target_lane = PlanBehavior(target_lane_, input);
@@ -210,6 +209,7 @@ void SimpleSplineBasedPlanner::PrepareLaneChange(PathPlannerInput input)
     }
 }
 
+/// @deprecated: Now used in DrivingState class
 void SimpleSplineBasedPlanner::ObeyRightLaneDrivingPolicy()
 {
     /// @todo Check if save to change to right lane and if we need this at all

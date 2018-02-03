@@ -1,3 +1,8 @@
+///
+/// @file
+/// @brief Note: Deprecated, as we use the DrivingStateMachine for behavior planning
+///
+
 #include "LaneChangePlanner.h"
 #include "HighwayMap.h"
 
@@ -112,7 +117,6 @@ std::pair<bool, int> ChangeLaneCheck(int current_Lane,
                                      vector<vector<int>>& close_cars,
                                      vector<int>& lane_ranks)
 {
-    // @todo Check these variable
     double distance_increment{0.0};
     static int lane_change_votes = 0;
     bool lane_change{false};
