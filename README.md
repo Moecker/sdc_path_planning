@@ -7,7 +7,7 @@ Lastly, provided project information is restated.
 The project Path Planning consists of three main blocks, Behavior Planning, Prediction and Trajectory Generation.
 
 ###  Behavior Planning
-Under the hood there is a finite state machine consisting of five states: "Keep Lane", "Prepare Lane Change Left/Right", "Lane Change Left/Right".
+Under the hood there is a finite state machine consisting of five states: `Keep Lane`, `Prepare Lane Change Left/Right`, `Lane Change Left/Right`.
 There is a set of transition functions when the behavior planner encounters a situation where a change in states makes sense.
 Starting from the "Keep Lane" state, if another vehicle in front is too slow, it evaluates the speed of the vehicles left and right of the current lane and choose to prepare a lane change to the lane with the higher speed.
 
@@ -36,8 +36,15 @@ Two anchor points come from previous paths. One is the very first point and the 
 Target speed is used for the distance of the generated spline points. Once a spline is in place, we sample it accordingly, so that the resulting speed is close to the target speed.
 We exploit the fact that the simulator has a constant frequency and consumes one point each 0.02 seconds. We can derive the required distance between points considering maximum accelration and maximum allowed speed.
 
-## Software Engineering
-The meat of the implementation is found in ´DrivingStateMachine´ class. Here, each state inherits from the main class and implements the virtual methods, such as react, entry and exit.
+## Results
+This image shows a screenshot with a distance driven which exceeds the requirement in the project's rubrik.
+![Image](media/sdc_pp_final.jpg)
+
+This video shows a uncut drive with a recent version of this project.
+![Video](https://img.youtube.com/vi/J4eMer3537I/0.jpg)](https://www.youtube.com/watch?v=J4eMer3537I)
+
+## Software Structure
+The meat of the implementation is found in `DrivingStateMachine` class. Here, each state inherits from the main class and implements the virtual methods, such as react, entry and exit.
 Each time, a new input from simulator is received, the react method (with the input as a payload) is triggered for the current state.
 The state itself then figures out what to do next and can trigger a transition to a next successor state.
 
@@ -45,9 +52,9 @@ There are a couple of classes which mainly come from the started code provided b
 There also are some left overs from experiments (i.e. the Cost, Road and Vehicle classes adapted from the Udacity quizzes).
 
 Once a good solution was found, characterization tests have been written to conserve this behavior and to enable further refactor and improve the code structure.
-Those use the received and sent out .json files and simply records those on the local machine. Test then can import those recorded jsons, playback the core of the path planning and compare outputs with what has been recorded previously. ON the software side, this expected the path planning core to be a library, which is linked against the test and the actual project executable.
+Those use the received and sent out `.json` files and simply records those on the local machine. Test then can import those recorded jsons, playback the core of the path planning and compare outputs with what has been recorded previously. ON the software side, this expected the path planning core to be a library, which is linked against the test and the actual project executable.
 
-For example, ´./path-planning-test ../test-data/input-advanced.json ../test-data/response-advanced.json ../data/highway_map.csv´ invokes a tests for a recoreded behvaior.
+For example, `./path-planning-test ../test-data/input-advanced.json ../test-data/response-advanced.json ../data/highway_map.csv` invokes a tests for a recoreded behvaior.
 
 ### References
 Some reference which eased the development of this project is stated below.
