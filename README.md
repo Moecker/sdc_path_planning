@@ -41,7 +41,7 @@ This image shows a screenshot with a distance driven which exceeds the requireme
 ![Image](media/sdc_pp_final.jpg)
 
 This video shows a uncut drive with a recent version of this project.
-![Video](https://img.youtube.com/vi/J4eMer3537I/0.jpg)](https://www.youtube.com/watch?v=J4eMer3537I)
+[![Video](https://img.youtube.com/vi/J4eMer3537I/0.jpg)](https://www.youtube.com/watch?v=J4eMer3537I)
 
 ### Rubric
 * The code compiles correctly.
